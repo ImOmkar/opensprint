@@ -101,6 +101,34 @@ async def delete_sprint(
 
     return {"message": "Sprint deleted"}
 
+# @router.patch("/{sprint_id}/toggle")
+# async def toggle_sprint(
+#     sprint_id: str,
+#     current_user=Depends(get_current_user)
+# ):
+
+#     try:
+#         sprint = await database["sprints"].find_one(
+#             {
+#                 "_id": ObjectId(sprint_id),
+#                 "user_id": current_user["github_id"]
+#             }
+#         )
+#     except Exception:
+#         raise HTTPException(status_code=400, detail="Invalid sprint ID")
+
+#     if not sprint:
+#         raise HTTPException(status_code=404, detail="Sprint not found")
+
+#     new_status = "completed" if sprint["status"] == "active" else "active"
+
+#     await database["sprints"].update_one(
+#         {"_id": ObjectId(sprint_id)},
+#         {"$set": {"status": new_status}}
+#     )
+
+#     return {"status": new_status}
+
 @router.patch("/{sprint_id}/toggle")
 async def toggle_sprint(
     sprint_id: str,
@@ -120,11 +148,33 @@ async def toggle_sprint(
     if not sprint:
         raise HTTPException(status_code=404, detail="Sprint not found")
 
-    new_status = "completed" if sprint["status"] == "active" else "active"
+    if sprint["status"] == "active":
+        new_status = "completed"
+        completed_at = datetime.utcnow()
 
-    await database["sprints"].update_one(
-        {"_id": ObjectId(sprint_id)},
-        {"$set": {"status": new_status}}
-    )
+        await database["sprints"].update_one(
+            {"_id": ObjectId(sprint_id)},
+            {
+                "$set": {
+                    "status": new_status,
+                    "completed_at": completed_at
+                }
+            }
+        )
+
+    else:
+        new_status = "active"
+
+        await database["sprints"].update_one(
+            {"_id": ObjectId(sprint_id)},
+            {
+                "$set": {
+                    "status": new_status
+                },
+                "$unset": {
+                    "completed_at": ""
+                }
+            }
+        )
 
     return {"status": new_status}

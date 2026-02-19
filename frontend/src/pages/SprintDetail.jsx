@@ -137,18 +137,65 @@ function SprintDetail() {
 
       <div className="flex justify-between items-center mb-6">
 
-        <h2 className="text-2xl font-bold text-green-400">
-          Sprint Deep Dives
-        </h2>
+      {!sprint ? (
+        <div className="text-gray-500">Loading sprint...</div>
+      ) : (
+        <div className="mb-8 bg-gray-900 p-6 rounded border border-gray-800">
 
-        {user && (
-          <button
-            onClick={handleCopyLink}
-            className="bg-green-500 text-black px-4 py-2 rounded font-semibold hover:bg-green-400"
-          >
-            Copy Public Link
-          </button>
-        )}
+          <div className="flex justify-between items-start">
+
+            <div>
+
+              <div className="flex items-center gap-3">
+
+                <h1 className="text-3xl font-bold text-green-400">
+                  {sprint.title}
+                </h1>
+
+                {sprint.status === "completed" && (
+                  <span className="text-xs bg-blue-500 text-black px-2 py-1 rounded">
+                    Completed
+                  </span>
+                )}
+
+              </div>
+
+              <p className="text-gray-400 mt-2">
+                {sprint.goal}
+              </p>
+
+              <p
+                className="text-xs text-gray-500 mt-3"
+                title={formatExactTime(sprint.created_at)}
+              >
+                Created {formatRelativeTime(sprint.created_at)}
+              </p>
+
+              {sprint.completed_at && (
+                <p
+                  className="text-xs text-blue-400 mt-1"
+                  title={formatExactTime(sprint.completed_at)}
+                >
+                  Completed {formatRelativeTime(sprint.completed_at)}
+                </p>
+              )}
+
+            </div>
+
+            {user && (
+              <button
+                onClick={handleCopyLink}
+                className="bg-green-500 text-black px-4 py-2 rounded font-semibold hover:bg-green-400"
+              >
+                Copy Public Link
+              </button>
+            )}
+
+          </div>
+
+        </div>
+      )}
+
 
       </div>
 

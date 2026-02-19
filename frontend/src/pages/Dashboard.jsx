@@ -167,9 +167,20 @@ function Dashboard() {
                   onClick={() => navigate(`/sprint/${sprint._id}`)}
                   className="cursor-pointer"
                 >
-                  <h4 className="text-lg font-bold text-green-400">
-                    {sprint.title}
-                  </h4>
+                  <div className="flex items-center gap-2">
+
+                    <h4 className="text-lg font-bold text-green-400">
+                      {sprint.title}
+                    </h4>
+
+                    {sprint.status === "completed" && (
+                      <span className="text-xs bg-blue-500 text-black px-2 py-1 rounded">
+                        Completed
+                      </span>
+                    )}
+
+                  </div>
+
                   <p className="text-gray-400">{sprint.goal}</p>
                   <p
                     className="text-xs text-gray-500 mt-2"
@@ -177,6 +188,15 @@ function Dashboard() {
                   >
                     Created {formatRelativeTime(sprint.created_at)}
                   </p>
+                  {sprint.completed_at && (
+                    <p
+                      className="text-xs text-blue-400 mt-1"
+                      title={formatExactTime(sprint.completed_at)}
+                    >
+                      Completed {formatRelativeTime(sprint.completed_at)}
+                    </p>
+                  )}
+
                   <p className="text-sm text-gray-600 mt-2">
                     Status: {sprint.status}
                   </p>

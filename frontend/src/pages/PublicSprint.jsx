@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 // import { api } from "../api/client"
 import { userService } from "../services/userService"
+import { formatExactTime, formatRelativeTime } from "../utils/time"
 
 
 function PublicSprint() {
@@ -45,6 +46,22 @@ function PublicSprint() {
         <p className="text-gray-400 mt-2">
           {data.sprint.goal}
         </p>
+        <p
+          className="text-xs text-gray-500 mt-2"
+          title={formatExactTime(data.sprint.created_at)}
+        >
+          Created {formatRelativeTime(data.sprint.created_at)}
+        </p>
+
+        {data.sprint.completed_at && (
+          <p
+            className="text-xs text-blue-400 mt-1"
+            title={formatExactTime(data.sprint.completed_at)}
+          >
+            Completed {formatRelativeTime(data.sprint.completed_at)}
+          </p>
+        )}
+
         <p className="text-sm text-gray-600 mt-2">
           Status: {data.sprint.status}
         </p>
