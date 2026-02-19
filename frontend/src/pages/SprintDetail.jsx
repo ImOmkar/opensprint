@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { api } from "../api/client"
+import { formatRelativeTime, formatExactTime } from "../utils/time"
+
 
 function SprintDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+
+  const [user, setUser] = useState(null)
 
   const [dives, setDives] = useState([])
   const [title, setTitle] = useState("")
@@ -18,6 +22,10 @@ function SprintDetail() {
 
 
   useEffect(() => {
+    api.get("/auth/github/me")
+    .then(data => setUser(data))
+    .catch(() => navigate("/"))
+
     loadSprint()
     loadDives()
   }, [])
@@ -101,6 +109,17 @@ function SprintDetail() {
     setConclusion("")
     loadDives()
   }
+
+  const handleCopyLink = () => {
+    if (!user) return
+  
+    const link = `${window.location.origin}/u/${user.username}/${id}`
+  
+    navigator.clipboard.writeText(link)
+  
+    alert("Public link copied")
+  }
+  
   
   
   return (
@@ -113,9 +132,23 @@ function SprintDetail() {
         ← Back
       </button>
 
-      <h2 className="text-2xl font-bold mb-6 text-green-400">
-        Sprint Deep Dives
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+
+        <h2 className="text-2xl font-bold text-green-400">
+          Sprint Deep Dives
+        </h2>
+
+        {user && (
+          <button
+            onClick={handleCopyLink}
+            className="bg-green-500 text-black px-4 py-2 rounded font-semibold hover:bg-green-400"
+          >
+            Copy Public Link
+          </button>
+        )}
+
+      </div>
+
 
       {/* Create Deep Dive */}
       {sprint && sprint.status === "active" && (
@@ -189,6 +222,14 @@ function SprintDetail() {
                 <h3 className="text-lg font-bold text-green-400">
                 {dive.title}
                 </h3>
+
+                <p
+                  className="text-xs text-gray-500 mb-2"
+                  title={formatExactTime(dive.created_at)}
+                >
+                  Logged {formatRelativeTime(dive.created_at)}
+                </p>
+
 
                 {sprint && sprint.status === "active" && (
                 <div className="flex gap-3">

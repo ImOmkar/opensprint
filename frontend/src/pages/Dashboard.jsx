@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { api } from "../api/client"
+import { formatRelativeTime, formatExactTime } from "../utils/time"
+
 
 function Dashboard() {
   const [user, setUser] = useState(null)
@@ -170,6 +172,12 @@ function Dashboard() {
                     {sprint.title}
                   </h4>
                   <p className="text-gray-400">{sprint.goal}</p>
+                  <p
+                    className="text-xs text-gray-500 mt-2"
+                    title={formatExactTime(sprint.created_at)}
+                  >
+                    Created {formatRelativeTime(sprint.created_at)}
+                  </p>
                   <p className="text-sm text-gray-600 mt-2">
                     Status: {sprint.status}
                   </p>
