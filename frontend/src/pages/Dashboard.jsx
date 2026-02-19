@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { api } from "../api/client"
+// import { api } from "../api/client"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
+import { sprintService } from "../services/sprintService"
+import { userService } from "../services/userService"
 
 
 function Dashboard() {
@@ -13,21 +15,19 @@ function Dashboard() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    api.get("/auth/github/me")
+    userService.getMe()
       .then(data => {
         setUser(data)
         loadSprints()
       })
       .catch(() => navigate("/"))
   }, [])
-  
 
   const loadSprints = () => {
-    api.get("/sprints/mine")
+    sprintService.getMine()
       .then(data => setSprints(data))
       .catch(err => console.error(err))
   }
-  
 
   const handleCreateSprint = async (e) => {
     e.preventDefault()
@@ -39,7 +39,7 @@ function Dashboard() {
       end_date: new Date(Date.now() + 30*24*60*60*1000).toISOString()
     }
 
-    await api.post("/sprints", body)
+    await sprintService.create(body)
 
     setTitle("")
     setGoal("")
@@ -56,7 +56,7 @@ function Dashboard() {
       end_date: new Date(Date.now() + 30*24*60*60*1000).toISOString()
     }
   
-    await api.put(`/sprints/${editingId}`, body)
+    await sprintService.update(editingId, body)
 
   
     setEditingId(null)
@@ -72,14 +72,13 @@ function Dashboard() {
   }
 
   const handleDeleteSprint = async (id) => {
-    await api.delete(`/sprints/${id}`)
+    await sprintService.delete(id)
   
     loadSprints()
   }
 
   const handleToggleSprint = async (id) => {
-    await api.patch(`/sprints/${id}/toggle`)
-
+    await sprintService.toggle(id)
   
     loadSprints()
   }

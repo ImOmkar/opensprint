@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
-import { api } from "../api/client"
+// import { api } from "../api/client"
+import { userService } from "../services/userService"
+
 
 function PublicProfile() {
   const { username } = useParams()
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    api.get(`/users/${username}`)
+    userService.getPublicProfile(username)
       .then(data => setData(data))
       .catch(() => setData(null))
   }, [username])

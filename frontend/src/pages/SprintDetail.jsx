@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { api } from "../api/client"
+// import { api } from "../api/client"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
+import { deepDiveService } from "../services/deepDiveService"
+import { sprintService } from "../services/sprintService"
+import { userService } from "../services/userService"
 
 
 function SprintDetail() {
@@ -22,7 +25,7 @@ function SprintDetail() {
 
 
   useEffect(() => {
-    api.get("/auth/github/me")
+    userService.getMe()
     .then(data => setUser(data))
     .catch(() => navigate("/"))
 
@@ -31,7 +34,7 @@ function SprintDetail() {
   }, [])
 
   const loadSprint = () => {
-    api.get("/sprints/mine")
+    sprintService.getMine()
       .then(data => {
         const current = data.find(s => s._id === id)
         if (current) setSprint(current)
@@ -41,7 +44,7 @@ function SprintDetail() {
   
   
   const loadDives = () => {
-    api.get(`/deep-dives/sprint/${id}`)
+    deepDiveService.getBySprint(id)
       .then(data => setDives(data))
       .catch(() => navigate("/"))
   }
@@ -59,7 +62,7 @@ function SprintDetail() {
       conclusion
     }
 
-    await api.post("/deep-dives", body)
+    await deepDiveService.create(body)
 
 
     setTitle("")
@@ -71,7 +74,7 @@ function SprintDetail() {
   }
 
   const handleDeleteDive = async (id) => {
-    await api.delete(`/deep-dives/${id}`)
+    await deepDiveService.delete(id)
 
   
     loadDives()
@@ -98,7 +101,7 @@ function SprintDetail() {
       conclusion
     }
   
-    await api.put(`/deep-dives/${editingDiveId}`, body)
+    await deepDiveService.update(editingDiveId, body)
 
   
     setEditingDiveId(null)

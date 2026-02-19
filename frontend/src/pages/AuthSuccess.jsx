@@ -1,12 +1,13 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { api } from "../api/client"
+// import { api } from "../api/client"
+import { userService } from "../services/userService"
 
 function AuthSuccess() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    api.get("/auth/github/me")
+    userService.getMe()
       .then(() => navigate("/dashboard"))
       .catch(() => navigate("/"))
   }, [])

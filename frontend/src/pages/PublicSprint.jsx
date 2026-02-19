@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { api } from "../api/client"
+// import { api } from "../api/client"
+import { userService } from "../services/userService"
+
 
 function PublicSprint() {
   const { username, sprintId } = useParams()
@@ -8,7 +10,7 @@ function PublicSprint() {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    api.get(`/users/${username}/${sprintId}`)
+    userService.getPublicSprint(username, sprintId)
       .then(data => setData(data))
       .catch(() => setData(null))
   }, [username, sprintId])
