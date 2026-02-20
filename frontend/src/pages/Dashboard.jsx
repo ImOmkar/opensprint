@@ -31,6 +31,10 @@ function Dashboard() {
   const [filteredDives, setFilteredDives] = useState([])
   const [loadingTagFilter, setLoadingTagFilter] = useState(false)
 
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState([])
+  const [searching, setSearching] = useState(false)
+
   useEffect(() => {
     userService.getMe()
       .then(async data => {
@@ -216,6 +220,56 @@ function Dashboard() {
     setLoadingTagFilter(false)
   }
 
+  const handleSearch = async (query) => {
+
+    setSearchQuery(query)
+  
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+  
+    setSearching(true)
+  
+    try {
+  
+      const sprints = await sprintService.getMine()
+  
+      let allDives = []
+  
+      for (const sprint of sprints) {
+  
+        const dives = await deepDiveService.getBySprint(sprint._id)
+  
+        const enriched = dives.map(dive => ({
+          ...dive,
+          sprintTitle: sprint.title,
+          sprintId: sprint._id
+        }))
+  
+        allDives = [...allDives, ...enriched]
+      }
+  
+      const q = query.toLowerCase()
+  
+      const filtered = allDives.filter(dive =>
+        dive.title?.toLowerCase().includes(q) ||
+        dive.problem?.toLowerCase().includes(q) ||
+        dive.hypothesis?.toLowerCase().includes(q) ||
+        dive.tests?.toLowerCase().includes(q) ||
+        dive.conclusion?.toLowerCase().includes(q) ||
+        dive.tags?.some(tag => tag.includes(q))
+      )
+  
+      setSearchResults(filtered)
+  
+    } catch (err) {
+      console.error(err)
+    }
+  
+    setSearching(false)
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -273,6 +327,85 @@ function Dashboard() {
         </div>
 
       </div>
+
+      <div className="mb-8">
+
+        <input
+          type="text"
+          placeholder="Search deep dives, tags, problems..."
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white focus:border-green-500 outline-none"
+        />
+
+      </div>
+
+      {searchQuery && (
+
+        <div className="mb-10">
+
+          <h3 className="text-xl font-semibold mb-4">
+            Search results for "{searchQuery}"
+          </h3>
+
+          {searching ? (
+
+            <Spinner text="Searching..." />
+
+          ) : searchResults.length === 0 ? (
+
+            <p className="text-gray-400">
+              No results found.
+            </p>
+
+          ) : (
+
+            <div className="grid gap-4">
+
+              {searchResults.map(dive => (
+
+                <div
+                  key={dive._id}
+                  onClick={() => navigate(`/sprint/${dive.sprintId}`)}
+                  className="bg-gray-900 border border-gray-800 hover:border-green-500 p-4 rounded cursor-pointer"
+                >
+
+                  <p className="text-xs text-gray-500 mb-1">
+                    Sprint: {dive.sprintTitle}
+                  </p>
+
+                  <h4 className="text-green-400 font-semibold">
+                    {dive.title}
+                  </h4>
+
+                  <p className="text-gray-400 text-sm mt-1">
+                    {dive.problem}
+                  </p>
+
+                  {dive.tags?.length > 0 && (
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      {dive.tags.map(tag => (
+                        <span
+                          key={tag}
+                          className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+      )}
 
       {Object.keys(globalTagCounts).length > 0 && (
         <div className="mb-8">
