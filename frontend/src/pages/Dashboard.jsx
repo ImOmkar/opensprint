@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
 import { sprintService } from "../services/sprintService"
 import { userService } from "../services/userService"
-
+import { deepDiveService } from "../services/deepDiveService"
 
 function Dashboard() {
   const [user, setUser] = useState(null)
@@ -13,6 +13,12 @@ function Dashboard() {
   const [goal, setGoal] = useState("")
   const [editingId, setEditingId] = useState(null)
   const navigate = useNavigate()
+
+  const [stats, setStats] = useState({
+    active: 0,
+    completed: 0,
+    dives: 0
+  })
 
   useEffect(() => {
     userService.getMe()
@@ -25,8 +31,38 @@ function Dashboard() {
 
   const loadSprints = () => {
     sprintService.getMine()
-      .then(data => setSprints(data))
-      .catch(err => console.error(err))
+      .then(data => {
+        setSprints(data)
+  
+        const active = data.filter(s => s.status === "active").length
+        const completed = data.filter(s => s.status === "completed").length
+  
+        setStats(prev => ({
+          ...prev,
+          active,
+          completed
+        }))
+  
+        loadDiveStats(data)
+      })
+  }
+
+  const loadDiveStats = async (sprints) => {
+    try {
+      let total = 0
+  
+      for (const sprint of sprints) {
+        const dives = await deepDiveService.getBySprint(sprint._id)
+        total += dives.length
+      }
+  
+      setStats(prev => ({
+        ...prev,
+        dives: total
+      }))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const handleCreateSprint = async (e) => {
@@ -107,6 +143,31 @@ function Dashboard() {
           </h2>
           <p className="text-gray-400">{user.email}</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6 mb-10">
+
+        <div className="bg-gray-900 p-6 rounded border border-gray-800">
+          <p className="text-gray-400 text-sm">Active Sprints</p>
+          <p className="text-2xl font-bold text-green-400">
+            {stats.active}
+          </p>
+        </div>
+
+        <div className="bg-gray-900 p-6 rounded border border-gray-800">
+          <p className="text-gray-400 text-sm">Completed Sprints</p>
+          <p className="text-2xl font-bold text-blue-400">
+            {stats.completed}
+          </p>
+        </div>
+
+        <div className="bg-gray-900 p-6 rounded border border-gray-800">
+          <p className="text-gray-400 text-sm">Total Deep Dives</p>
+          <p className="text-2xl font-bold text-purple-400">
+            {stats.dives}
+          </p>
+        </div>
+
       </div>
 
       {/* Create Sprint */}
