@@ -41,7 +41,17 @@ function PublicProfile() {
 
       <div className="grid gap-4">
         {data.sprints.length === 0 && (
-          <p className="text-gray-500">No sprints yet.</p>
+          <div className="bg-gray-900 border border-gray-800 rounded p-8 text-center">
+
+            <h3 className="text-lg font-semibold text-green-400 mb-2">
+              No public sprints yet
+            </h3>
+
+            <p className="text-gray-400">
+              This user hasn't started any sprints.
+            </p>
+
+          </div>
         )}
 
         {data.sprints.map(sprint => (

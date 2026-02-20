@@ -231,7 +231,21 @@ function Dashboard() {
         <h3 className="text-xl font-semibold mb-4">Your Sprints</h3>
 
         {sprints.length === 0 && (
-          <p className="text-gray-500">No sprints yet.</p>
+          <div className="bg-gray-900 border border-gray-800 rounded p-10 text-center">
+
+            <h3 className="text-xl font-semibold text-green-400 mb-2">
+              No sprints yet
+            </h3>
+
+            <p className="text-gray-400 mb-4">
+              Start your first sprint and document your engineering journey.
+            </p>
+
+            <p className="text-gray-500 text-sm">
+              Create a sprint above to begin logging deep dives.
+            </p>
+
+          </div>
         )}
 
         <div className="grid gap-4">
