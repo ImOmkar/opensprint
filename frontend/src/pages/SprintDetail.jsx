@@ -5,6 +5,7 @@ import { formatRelativeTime, formatExactTime } from "../utils/time"
 import { deepDiveService } from "../services/deepDiveService"
 import { sprintService } from "../services/sprintService"
 import { userService } from "../services/userService"
+import ConfirmModal from "../components/ConfirmModal"
 
 
 function SprintDetail() {
@@ -22,7 +23,7 @@ function SprintDetail() {
 
   const [sprint, setSprint] = useState(null)
   const [editingDiveId, setEditingDiveId] = useState(null)
-
+  const [deleteDiveId, setDeleteDiveId] = useState(null)
 
   useEffect(() => {
     userService.getMe()
@@ -73,9 +74,13 @@ function SprintDetail() {
     loadDives()
   }
 
-  const handleDeleteDive = async (id) => {
-    await deepDiveService.delete(id)
+  const confirmDeleteDive = async () => {
 
+    if (!deleteDiveId) return
+  
+    await deepDiveService.delete(deleteDiveId)
+  
+    setDeleteDiveId(null)
   
     loadDives()
   }
@@ -291,7 +296,8 @@ function SprintDetail() {
                     </button>
 
                     <button
-                    onClick={() => handleDeleteDive(dive._id)}
+                    // onClick={() => handleDeleteDive(dive._id)}
+                    onClick={() => setDeleteDiveId(dive._id)}
                     className="text-red-500 hover:underline text-sm"
                     >
                     Delete
@@ -302,6 +308,16 @@ function SprintDetail() {
           </div>
         ))}
       </div>
+
+      <ConfirmModal
+        isOpen={!!deleteDiveId}
+        title="Delete Deep Dive"
+        message="Are you sure you want to delete this deep dive? This cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteDive}
+        onCancel={() => setDeleteDiveId(null)}
+      />
 
     </div>
   )

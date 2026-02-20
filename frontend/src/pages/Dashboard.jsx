@@ -5,6 +5,7 @@ import { formatRelativeTime, formatExactTime } from "../utils/time"
 import { sprintService } from "../services/sprintService"
 import { userService } from "../services/userService"
 import { deepDiveService } from "../services/deepDiveService"
+import ConfirmModal from "../components/ConfirmModal"
 
 function Dashboard() {
   const [user, setUser] = useState(null)
@@ -13,6 +14,7 @@ function Dashboard() {
   const [goal, setGoal] = useState("")
   const [editingId, setEditingId] = useState(null)
   const navigate = useNavigate()
+  const [deleteSprintId, setDeleteSprintId] = useState(null)
 
   const [stats, setStats] = useState({
     active: 0,
@@ -122,11 +124,16 @@ function Dashboard() {
     setGoal(sprint.goal)
   }
 
-  const handleDeleteSprint = async (id) => {
-    await sprintService.delete(id)
-    loadStats()
+  const confirmDeleteSprint = async () => {
+
+    if (!deleteSprintId) return
+  
+    await sprintService.delete(deleteSprintId)
+  
+    setDeleteSprintId(null)
   
     loadSprints()
+    loadStats()
   }
 
   const handleToggleSprint = async (id) => {
@@ -299,7 +306,8 @@ function Dashboard() {
                   </button>
 
                   <button
-                    onClick={() => handleDeleteSprint(sprint._id)}
+                    // onClick={() => handleDeleteSprint(sprint._id)}
+                    onClick={() => setDeleteSprintId(sprint._id)}
                     className="text-red-500 hover:underline text-sm"
                   >
                     Delete
@@ -312,6 +320,16 @@ function Dashboard() {
 
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!deleteSprintId}
+        title="Delete Sprint"
+        message="Are you sure you want to delete this sprint? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteSprint}
+        onCancel={() => setDeleteSprintId(null)}
+      />
 
     </div>
   )
