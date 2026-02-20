@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
 import { sprintService } from "../services/sprintService"
 import { userService } from "../services/userService"
-import { deepDiveService } from "../services/deepDiveService"
 import ConfirmModal from "../components/ConfirmModal"
 import Spinner from "../components/Spinner"
+import { deepDiveService } from "../services/deepDiveService"
 
 function Dashboard() {
   const [user, setUser] = useState(null)
@@ -19,52 +19,48 @@ function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [description, setDescription] = useState("")
 
+  const [globalTagCounts, setGlobalTagCounts] = useState({})
+
   const [stats, setStats] = useState({
     active: 0,
     completed: 0,
     dives: 0
   })
 
+  const [selectedGlobalTag, setSelectedGlobalTag] = useState(null)
+  const [filteredDives, setFilteredDives] = useState([])
+  const [loadingTagFilter, setLoadingTagFilter] = useState(false)
+
   useEffect(() => {
     userService.getMe()
-      .then(data => {
+      .then(async data => {
         setUser(data)
-        return Promise.all([
-          sprintService.getMine(),
-          userService.getMyStats()
+  
+        // Run all loaders in parallel
+        await Promise.all([
+          loadSprints(),
+          loadStats(),
+          loadGlobalTags()
         ])
-      })
-      .then(([sprintsData, statsData]) => {
-  
-        setSprints(sprintsData)
-  
-        setStats({
-          active: statsData.active_sprints,
-          completed: statsData.completed_sprints,
-          dives: statsData.total_deep_dives
-        })
   
         setLoading(false)
       })
       .catch(() => navigate("/"))
   }, [])
 
-  const loadSprints = () => {
-    sprintService.getMine()
-      .then(data => {
-        setSprints(data)
+  const loadSprints = async () => {
+    const data = await sprintService.getMine()
   
-        const active = data.filter(s => s.status === "active").length
-        const completed = data.filter(s => s.status === "completed").length
+    setSprints(data)
   
-        setStats(prev => ({
-          ...prev,
-          active,
-          completed
-        }))
+    const active = data.filter(s => s.status === "active").length
+    const completed = data.filter(s => s.status === "completed").length
   
-        // loadDiveStats(data)
-      })
+    setStats(prev => ({
+      ...prev,
+      active,
+      completed
+    }))
   }
 
   // const loadDiveStats = async (sprints) => {
@@ -85,16 +81,14 @@ function Dashboard() {
   //   }
   // }
 
-  const loadStats = () => {
-    userService.getMyStats()
-      .then(data => {
-        setStats({
-          active: data.active_sprints,
-          completed: data.completed_sprints,
-          dives: data.total_deep_dives
-        })
-      })
-      .catch(err => console.error(err))
+  const loadStats = async () => {
+    const data = await userService.getMyStats()
+  
+    setStats({
+      active: data.active_sprints,
+      completed: data.completed_sprints,
+      dives: data.total_deep_dives
+    })
   }
 
   const handleCreateSprint = async (e) => {
@@ -163,6 +157,64 @@ function Dashboard() {
     loadSprints()
   }
   
+  const loadGlobalTags = async () => {
+    try {
+      const sprints = await sprintService.getMine()
+  
+      const tagMap = {}
+  
+      for (const sprint of sprints) {
+        const dives = await deepDiveService.getBySprint(sprint._id)
+  
+        dives.forEach(dive => {
+          if (!dive.tags) return
+  
+          dive.tags.forEach(tag => {
+            tagMap[tag] = (tagMap[tag] || 0) + 1
+          })
+        })
+      }
+  
+      setGlobalTagCounts(tagMap)
+  
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleGlobalTagClick = async (tag) => {
+
+    setSelectedGlobalTag(tag)
+    setLoadingTagFilter(true)
+  
+    try {
+  
+      const sprints = await sprintService.getMine()
+  
+      let allDives = []
+  
+      for (const sprint of sprints) {
+        const dives = await deepDiveService.getBySprint(sprint._id)
+  
+        const tagged = dives
+          .filter(dive => dive.tags?.includes(tag))
+          .map(dive => ({
+            ...dive,
+            sprintTitle: sprint.title,
+            sprintId: sprint._id
+          }))
+  
+        allDives = [...allDives, ...tagged]
+      }
+  
+      setFilteredDives(allDives)
+  
+    } catch (err) {
+      console.error(err)
+    }
+  
+    setLoadingTagFilter(false)
+  }
 
   if (!user) {
     return (
@@ -221,6 +273,119 @@ function Dashboard() {
         </div>
 
       </div>
+
+      {Object.keys(globalTagCounts).length > 0 && (
+        <div className="mb-8">
+
+          <p className="text-sm text-gray-400 mb-2">
+            Your knowledge tags
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+
+            {Object.entries(globalTagCounts)
+              .sort((a, b) => b[1] - a[1])
+              .map(([tag, count]) => (
+
+                <button
+                    key={tag}
+                    onClick={() => handleGlobalTagClick(tag)}
+                    className={`text-xs border px-2 py-1 rounded-md flex items-center gap-1 transition
+                      ${
+                        selectedGlobalTag === tag
+                          ? "bg-purple-500 text-black border-purple-500"
+                          : "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40"
+                      }`}
+                  >
+                  <span>#{tag}</span>
+                  <span className="text-gray-400">
+                    ({count})
+                  </span>
+                </button>
+              ))}
+
+          </div>
+
+        </div>
+      )}
+
+      {selectedGlobalTag && (
+        <div className="mb-6 flex items-center gap-3">
+
+          <span className="text-gray-400 text-sm">
+            Showing dives tagged
+          </span>
+
+          <span className="text-xs bg-purple-500 text-black px-2 py-1 rounded-md">
+            #{selectedGlobalTag}
+          </span>
+
+          <button
+            onClick={() => {
+              setSelectedGlobalTag(null)
+              setFilteredDives([])
+            }}
+            className="text-red-400 text-sm hover:text-red-300"
+          >
+            Clear
+          </button>
+
+        </div>
+      )}
+
+      {selectedGlobalTag && (
+
+      <div className="mb-10">
+
+        <h3 className="text-xl font-semibold mb-4">
+          Deep dives tagged #{selectedGlobalTag}
+        </h3>
+
+        {loadingTagFilter ? (
+
+          <Spinner text="Loading dives..." />
+
+        ) : filteredDives.length === 0 ? (
+
+          <p className="text-gray-400">
+            No dives found.
+          </p>
+
+        ) : (
+
+          <div className="grid gap-4">
+
+            {filteredDives.map(dive => (
+
+              <div
+                key={dive._id}
+                onClick={() => navigate(`/sprint/${dive.sprintId}`)}
+                className="bg-gray-900 border border-gray-800 hover:border-purple-500 p-4 rounded cursor-pointer"
+              >
+
+                <p className="text-xs text-gray-500 mb-1">
+                  Sprint: {dive.sprintTitle}
+                </p>
+
+                <h4 className="text-green-400 font-semibold">
+                  {dive.title}
+                </h4>
+
+                <p className="text-gray-400 text-sm mt-1">
+                  {dive.problem}
+                </p>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        )}
+
+      </div>
+
+      )}
 
       {/* Create Sprint */}
       <form 
