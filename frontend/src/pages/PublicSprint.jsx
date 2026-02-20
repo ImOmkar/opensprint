@@ -3,17 +3,24 @@ import { useParams } from "react-router-dom"
 // import { api } from "../api/client"
 import { userService } from "../services/userService"
 import { formatExactTime, formatRelativeTime } from "../utils/time"
+import Spinner from "../components/Spinner"
 
 
 function PublicSprint() {
   const { username, sprintId } = useParams()
-
+  const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
 
   useEffect(() => {
     userService.getPublicSprint(username, sprintId)
-      .then(data => setData(data))
-      .catch(() => setData(null))
+      .then(data => {
+        setData(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setData(null)
+        setLoading(false)
+      })
   }, [username, sprintId])
   
 
@@ -21,6 +28,14 @@ function PublicSprint() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         Not Found
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Spinner text="Loading sprint..." />
       </div>
     )
   }

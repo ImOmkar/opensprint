@@ -2,16 +2,24 @@ import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
 // import { api } from "../api/client"
 import { userService } from "../services/userService"
+import Spinner from "../components/Spinner"
 
 
 function PublicProfile() {
   const { username } = useParams()
   const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     userService.getPublicProfile(username)
-      .then(data => setData(data))
-      .catch(() => setData(null))
+      .then(data => {
+        setData(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setData(null)
+        setLoading(false)
+      })
   }, [username])
   
 
@@ -19,6 +27,14 @@ function PublicProfile() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         Not Found
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Spinner text="Loading profile..." />
       </div>
     )
   }

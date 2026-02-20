@@ -6,6 +6,7 @@ import { deepDiveService } from "../services/deepDiveService"
 import { sprintService } from "../services/sprintService"
 import { userService } from "../services/userService"
 import ConfirmModal from "../components/ConfirmModal"
+import Spinner from "../components/Spinner"
 
 
 function SprintDetail() {
@@ -25,13 +26,28 @@ function SprintDetail() {
   const [editingDiveId, setEditingDiveId] = useState(null)
   const [deleteDiveId, setDeleteDiveId] = useState(null)
 
-  useEffect(() => {
-    userService.getMe()
-    .then(data => setUser(data))
-    .catch(() => navigate("/"))
+  const [loading, setLoading] = useState(true)
 
-    loadSprint()
-    loadDives()
+  useEffect(() => {
+
+    Promise.all([
+      userService.getMe(),
+      sprintService.getMine(),
+      deepDiveService.getBySprint(id)
+    ])
+      .then(([userData, sprintsData, divesData]) => {
+  
+        setUser(userData)
+  
+        const current = sprintsData.find(s => s._id === id)
+        setSprint(current)
+  
+        setDives(divesData)
+  
+        setLoading(false)
+      })
+      .catch(() => navigate("/"))
+  
   }, [])
 
   const loadSprint = () => {
@@ -128,7 +144,13 @@ function SprintDetail() {
     alert("Public link copied")
   }
   
-  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Spinner text="Loading sprint..." />
+      </div>
+    )
+  }
   
   return (
     <div className="min-h-screen bg-black text-white p-10">

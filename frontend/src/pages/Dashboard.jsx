@@ -6,6 +6,7 @@ import { sprintService } from "../services/sprintService"
 import { userService } from "../services/userService"
 import { deepDiveService } from "../services/deepDiveService"
 import ConfirmModal from "../components/ConfirmModal"
+import Spinner from "../components/Spinner"
 
 function Dashboard() {
   const [user, setUser] = useState(null)
@@ -15,6 +16,7 @@ function Dashboard() {
   const [editingId, setEditingId] = useState(null)
   const navigate = useNavigate()
   const [deleteSprintId, setDeleteSprintId] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const [stats, setStats] = useState({
     active: 0,
@@ -26,8 +28,22 @@ function Dashboard() {
     userService.getMe()
       .then(data => {
         setUser(data)
-        loadSprints()
-        loadStats()
+        return Promise.all([
+          sprintService.getMine(),
+          userService.getMyStats()
+        ])
+      })
+      .then(([sprintsData, statsData]) => {
+  
+        setSprints(sprintsData)
+  
+        setStats({
+          active: statsData.active_sprints,
+          completed: statsData.completed_sprints,
+          dives: statsData.total_deep_dives
+        })
+  
+        setLoading(false)
       })
       .catch(() => navigate("/"))
   }, [])
@@ -147,6 +163,14 @@ function Dashboard() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         Loading...
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <Spinner text="Loading dashboard..." />
       </div>
     )
   }
