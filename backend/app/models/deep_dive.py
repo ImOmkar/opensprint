@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-
+from typing import List, Optional
 
 
 class DeepDiveCreate(BaseModel):
@@ -10,6 +10,7 @@ class DeepDiveCreate(BaseModel):
     hypothesis: str
     tests: str
     conclusion: str
+    tags: Optional[List[str]] = []
     
     
 class DeepDiveInDB(DeepDiveCreate):

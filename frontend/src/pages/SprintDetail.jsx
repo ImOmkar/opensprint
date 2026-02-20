@@ -24,9 +24,22 @@ function SprintDetail() {
 
   const [sprint, setSprint] = useState(null)
   const [editingDiveId, setEditingDiveId] = useState(null)
-  const [deleteDiveId, setDeleteDiveId] = useState(null)
+  const [deleteDiveId, setDeleteDiveId] = useState(null)  
+
+  const [tags, setTags] = useState("")
+  const [selectedTag, setSelectedTag] = useState(null)
 
   const [loading, setLoading] = useState(true)
+
+  const tagCounts = dives.reduce((acc, dive) => {
+    if (!dive.tags) return acc
+  
+    dive.tags.forEach(tag => {
+      acc[tag] = (acc[tag] || 0) + 1
+    })
+  
+    return acc
+  }, {})
 
   useEffect(() => {
 
@@ -76,7 +89,11 @@ function SprintDetail() {
       problem,
       hypothesis,
       tests,
-      conclusion
+      conclusion,
+      tags: tags
+        .split(",")
+        .map(tag => tag.trim().replace(/^#/, "")) // removes accidental #
+        .filter(Boolean)
     }
 
     await deepDiveService.create(body)
@@ -88,6 +105,7 @@ function SprintDetail() {
     setTests("")
     setConclusion("")
     loadDives()
+    setTags("")
   }
 
   const confirmDeleteDive = async () => {
@@ -108,6 +126,7 @@ function SprintDetail() {
     setHypothesis(dive.hypothesis)
     setTests(dive.tests)
     setConclusion(dive.conclusion)
+    setTags((dive.tags || []).join(", "))
   }
   
   const handleUpdateDive = async (e) => {
@@ -119,7 +138,11 @@ function SprintDetail() {
       problem,
       hypothesis,
       tests,
-      conclusion
+      conclusion,
+      tags: tags
+        .split(",")
+        .map(tag => tag.trim().replace(/^#/, "")) // removes accidental #
+        .filter(Boolean)
     }
   
     await deepDiveService.update(editingDiveId, body)
@@ -132,6 +155,7 @@ function SprintDetail() {
     setTests("")
     setConclusion("")
     loadDives()
+    setTags("")
   }
 
   const handleCopyLink = () => {
@@ -232,6 +256,40 @@ function SprintDetail() {
 
       </div>
 
+      {Object.keys(tagCounts).length > 0 && (
+        <div className="mb-6">
+
+          <p className="text-sm text-gray-400 mb-2">
+            Tags in this sprint
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+
+            {Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).map(([tag, count]) => (
+
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag)}
+                className={`text-xs border px-2 py-1 rounded-md transition flex items-center gap-1
+                  ${
+                    selectedTag === tag
+                      ? "bg-purple-500 text-black border-purple-500"
+                      : "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40"
+                  }`}
+              >
+                <span>#{tag}</span>
+                <span className="text-gray-400">
+                  ({count})
+                </span>
+              </button>
+
+            ))}
+
+          </div>
+
+        </div>
+      )}
+
 
       {/* Create Deep Dive */}
       {sprint && sprint.status === "active" && (
@@ -277,6 +335,14 @@ function SprintDetail() {
             required
             />
 
+            <input
+              type="text"
+              placeholder="Tags (comma separated, e.g. debugging, auth, linux)"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="w-full mb-3 p-2 rounded bg-black border border-gray-700"
+            />
+
             <button
             type="submit"
             className="bg-green-500 px-4 py-2 rounded text-black font-semibold hover:bg-green-400"
@@ -286,12 +352,34 @@ function SprintDetail() {
         </form>
       )}
 
-    {sprint && sprint.status === "completed" && (
-    <p className="text-blue-400 mb-6">
-        This sprint is completed. Deep dives are locked.
-    </p>
-    )}
+      {sprint && sprint.status === "completed" && (
+      <p className="text-blue-400 mb-6">
+          This sprint is completed. Deep dives are locked.
+      </p>
+      )}
 
+      {selectedTag && (
+        <div className="mb-4 flex items-center gap-3">
+
+          <span className="text-sm text-gray-400">
+            Filtering by
+          </span>
+
+          <span
+            className="text-xs bg-purple-500 text-black border border-purple-500 px-2 py-1 rounded-md"
+          >
+            #{selectedTag}
+          </span>
+
+          <button
+            onClick={() => setSelectedTag(null)}
+            className="text-sm text-red-400 hover:text-red-300"
+          >
+            Clear
+          </button>
+
+        </div>
+      )}
 
       {/* Deep Dive List */}
       <div className="space-y-4">
@@ -313,12 +401,37 @@ function SprintDetail() {
           </div>
         )}
 
-        {dives.map(dive => (
+        {dives
+          .filter(dive =>
+            selectedTag ? dive.tags?.includes(selectedTag) : true
+          )
+          .map(dive => (
           <div key={dive._id} className="bg-gray-900 p-4 rounded border border-gray-800">
             <div className="flex justify-between items-start">
                 <h3 className="text-lg font-bold text-green-400">
                 {dive.title}
                 </h3>
+
+                {dive.tags && dive.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3 mt-1">
+
+                    {dive.tags.map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => setSelectedTag(tag)}
+                        className={`text-xs border px-2 py-1 rounded-md transition
+                          ${
+                            selectedTag === tag
+                              ? "bg-purple-500 text-black border-purple-500"
+                              : "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40"
+                          }`}
+                      >
+                        #{tag}
+                      </button>
+                    ))}
+
+                  </div>
+                )}
 
                 <p
                   className="text-xs text-gray-500 mb-2"

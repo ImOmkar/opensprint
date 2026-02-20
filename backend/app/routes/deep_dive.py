@@ -4,6 +4,7 @@ from app.db.database import database
 from app.models.deep_dive import DeepDiveCreate
 from app.auth.dependencies import get_current_user
 from bson import ObjectId
+from app.utils.tag_utils import normalize_tags
 
 router = APIRouter(prefix="/deep-dives", tags=["Deep Dives"])
 
@@ -52,7 +53,8 @@ async def create_deep_dive(
         "hypothesis": deep_dive.hypothesis,
         "tests": deep_dive.tests,
         "conclusion": deep_dive.conclusion,
-        "created_at": datetime.utcnow()
+        "tags": normalize_tags(deep_dive.tags),
+        "created_at": datetime.now()
     }
 
     result = await database["deep_dives"].insert_one(deep_dive_doc)
@@ -109,7 +111,8 @@ async def update_deep_dive(
                 "problem": deep_dive.problem,
                 "hypothesis": deep_dive.hypothesis,
                 "tests": deep_dive.tests,
-                "conclusion": deep_dive.conclusion
+                "conclusion": deep_dive.conclusion,
+                "tags": normalize_tags(deep_dive.tags),
             }
         }
     )
