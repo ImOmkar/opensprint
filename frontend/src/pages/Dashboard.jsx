@@ -251,7 +251,7 @@ function Dashboard() {
           placeholder="Sprint description (context, scope, approach)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white mt-2"
+          className="w-full mb-3 p-2 rounded bg-black border border-gray-700"
         />
 
         <button
