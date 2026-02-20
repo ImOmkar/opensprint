@@ -25,6 +25,7 @@ function Dashboard() {
       .then(data => {
         setUser(data)
         loadSprints()
+        loadStats()
       })
       .catch(() => navigate("/"))
   }, [])
@@ -43,26 +44,38 @@ function Dashboard() {
           completed
         }))
   
-        loadDiveStats(data)
+        // loadDiveStats(data)
       })
   }
 
-  const loadDiveStats = async (sprints) => {
-    try {
-      let total = 0
+  // const loadDiveStats = async (sprints) => {
+  //   try {
+  //     let total = 0
   
-      for (const sprint of sprints) {
-        const dives = await deepDiveService.getBySprint(sprint._id)
-        total += dives.length
-      }
+  //     for (const sprint of sprints) {
+  //       const dives = await deepDiveService.getBySprint(sprint._id)
+  //       total += dives.length
+  //     }
   
-      setStats(prev => ({
-        ...prev,
-        dives: total
-      }))
-    } catch (err) {
-      console.error(err)
-    }
+  //     setStats(prev => ({
+  //       ...prev,
+  //       dives: total
+  //     }))
+  //   } catch (err) {
+  //     console.error(err)
+  //   }
+  // }
+
+  const loadStats = () => {
+    userService.getMyStats()
+      .then(data => {
+        setStats({
+          active: data.active_sprints,
+          completed: data.completed_sprints,
+          dives: data.total_deep_dives
+        })
+      })
+      .catch(err => console.error(err))
   }
 
   const handleCreateSprint = async (e) => {
@@ -76,6 +89,7 @@ function Dashboard() {
     }
 
     await sprintService.create(body)
+    loadStats()
 
     setTitle("")
     setGoal("")
@@ -93,6 +107,7 @@ function Dashboard() {
     }
   
     await sprintService.update(editingId, body)
+    loadStats()
 
   
     setEditingId(null)
@@ -109,6 +124,7 @@ function Dashboard() {
 
   const handleDeleteSprint = async (id) => {
     await sprintService.delete(id)
+    loadStats()
   
     loadSprints()
   }

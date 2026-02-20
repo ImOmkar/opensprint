@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.db.database import database
 from bson import ObjectId
+from app.auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -13,6 +14,30 @@ async def get_users():
         users.append(user)
     return users
 
+@router.get("/me/stats")
+async def get_my_stats(current_user=Depends(get_current_user)):
+
+    github_id = current_user["github_id"]
+
+    active_sprints = await database["sprints"].count_documents({
+        "user_id": github_id,
+        "status": "active"
+    })
+
+    completed_sprints = await database["sprints"].count_documents({
+        "user_id": github_id,
+        "status": "completed"
+    })
+
+    total_deep_dives = await database["deep_dives"].count_documents({
+        "user_id": github_id
+    })
+
+    return {
+        "active_sprints": active_sprints,
+        "completed_sprints": completed_sprints,
+        "total_deep_dives": total_deep_dives
+    }
 
 @router.get("/{username}")
 async def public_profile(username: str):
@@ -78,3 +103,5 @@ async def public_sprint_detail(username: str, sprint_id: str):
         "sprint": sprint,
         "deep_dives": deep_dives
     }
+    
+    
