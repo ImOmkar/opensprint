@@ -15,13 +15,14 @@ import MarkdownEditor from "../components/MarkdownEditor"
 import { draftService } from "../services/draftService"
 import { versionService } from "../services/versionService"
 import DiffViewer from "../components/DiffViewer"
+import TagInput from "../components/TagInput"
 
 function Section({ title, content }) {
 
   if (!content) return null
 
   return (
-    <div className="mb-6">
+    <div className="mb-2">
 
       <h4 className="text-gray-400 font-semibold mb-2">
         {title}
@@ -62,7 +63,8 @@ function SprintDetail() {
 
   const [compareVersion, setCompareVersion] = useState(null)
 
-  const [tags, setTags] = useState("")
+  // const [tags, setTags] = useState("")
+  const [tags, setTags] = useState([])
   const [selectedTag, setSelectedTag] = useState(null)
 
   const [loading, setLoading] = useState(true)
@@ -78,6 +80,10 @@ function SprintDetail() {
   
     return acc
   }, {})
+
+  
+  const [selectedDiveId, setSelectedDiveId] = useState(null)
+  const selectedDive = dives.find(d => d._id === selectedDiveId)
 
   useEffect(() => {
 
@@ -95,6 +101,12 @@ function SprintDetail() {
   
         setDives(divesData)
   
+        setLoading(false)
+
+        // auto select first dive
+        if (divesData.length > 0)
+          setSelectedDiveId(divesData[0]._id)
+
         setLoading(false)
       })
       .catch(() => navigate("/"))
@@ -173,10 +185,11 @@ function SprintDetail() {
       hypothesis,
       tests,
       conclusion,
+      // tags: tags
+      //   .split(",")
+      //   .map(tag => tag.trim().replace(/^#/, ""))
+      //   .filter(Boolean)
       tags: tags
-        .split(",")
-        .map(tag => tag.trim().replace(/^#/, ""))
-        .filter(Boolean)
     }
   
     const newDive = await deepDiveService.create(body)
@@ -184,8 +197,10 @@ function SprintDetail() {
     await draftService.delete(id)
   
     setExpandedDiveIds(prev => new Set([...prev, newDive._id]))
+
+    setDives(prev => [newDive, ...prev])
   
-    setDives(prev => [newDive, ...prev])   // immediate UI update
+    setSelectedDiveId(newDive._id)   // immediate UI update
   
     setTitle("")
     setProblem("")
@@ -197,13 +212,14 @@ function SprintDetail() {
 
   const confirmDeleteDive = async () => {
 
-    if (!deleteDiveId) return
-  
     await deepDiveService.delete(deleteDiveId)
   
-    setDeleteDiveId(null)
+    setDives(prev => prev.filter(d => d._id !== deleteDiveId))
   
-    loadDives()
+    if (selectedDiveId === deleteDiveId)
+      setSelectedDiveId(null)
+  
+    setDeleteDiveId(null)
   }
 
   const handleEditDive = (dive) => {
@@ -213,7 +229,8 @@ function SprintDetail() {
     setHypothesis(dive.hypothesis)
     setTests(dive.tests)
     setConclusion(dive.conclusion)
-    setTags((dive.tags || []).join(", "))
+    // setTags((dive.tags || []).join(", "))
+    setTags(dive.tags || [])
     setIsDiveModalOpen(true)
   }
   
@@ -227,10 +244,11 @@ function SprintDetail() {
       hypothesis,
       tests,
       conclusion,
+      // tags: tags
+      //   .split(",")
+      //   .map(tag => tag.trim().replace(/^#/, ""))
+      //   .filter(Boolean)
       tags: tags
-        .split(",")
-        .map(tag => tag.trim().replace(/^#/, ""))
-        .filter(Boolean)
     }
   
     await deepDiveService.update(editingDiveId, body)
@@ -288,10 +306,24 @@ function SprintDetail() {
       </div>
     )
   }
+
+  const filteredDives = selectedTag
+  ? dives.filter(d => d.tags?.includes(selectedTag))
+  : dives
+
+  const resetForm = () => {
+    setEditingDiveId(null)
+    setTitle("")
+    setProblem("")
+    setHypothesis("")
+    setTests("")
+    setConclusion("")
+    setTags("")
+  }
   
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      {/* <div className="max-w-6xl mx-auto px-6 py-10">
 
         <button
           onClick={() => navigate("/dashboard")}
@@ -302,71 +334,118 @@ function SprintDetail() {
 
         <div className="flex justify-between items-center mb-6">
 
-        {!sprint ? (
-          <div className="text-gray-500">Loading sprint...</div>
-        ) : (
-          <div className="mb-8 bg-gray-900 p-6 rounded border border-gray-800">
+          {!sprint ? (
+            <div className="text-gray-500">Loading sprint...</div>
+          ) : (
+            <div className="
+            w-full
+            max-w-md
+            sm:max-w-none
+            bg-gradient-to-br from-gray-900 to-gray-950
+            p-5 sm:p-6 lg:p-8
+            rounded-xl border border-gray-800 shadow-lg
+          ">
 
-            <div className="flex justify-between items-start">
+              <div className="
+                flex flex-col sm:flex-row
+                sm:justify-between sm:items-start
+                gap-4 sm:gap-6
+              ">
 
-              <div>
+                <div className="flex-1 min-w-0">
 
-                <div className="flex items-center gap-3">
+                  <div className="
+                    flex flex-col sm:flex-row
+                    sm:items-center
+                    gap-2 sm:gap-3
+                    mb-2
+                  ">
 
-                  <h1 className="text-3xl font-bold text-green-400">
-                    {sprint.title}
-                  </h1>
+                    <h1 className="
+                      text-xl sm:text-2xl lg:text-3xl
+                      font-bold text-green-400
+                      break-words
+                    ">
+                      {sprint.title}
+                    </h1>
 
-                  {sprint.status === "completed" && (
-                    <span className="text-xs bg-blue-500 text-black px-2 py-1 rounded">
-                      Completed
-                    </span>
+                    {sprint.status === "completed" && (
+                      <span className="
+                        text-xs
+                        bg-blue-500 text-black
+                        px-2 py-1 rounded
+                        w-fit
+                      ">
+                        Completed
+                      </span>
+                    )}
+
+                  </div>
+
+                  <p className="
+                    text-sm sm:text-base
+                    text-gray-400 mb-2
+                    break-words
+                  ">
+                    {sprint.goal}
+                  </p>
+
+                  {sprint.description && (
+                    <p className="
+                      text-sm sm:text-base
+                      text-gray-500 whitespace-pre-wrap
+                      break-words
+                    ">
+                      {sprint.description}
+                    </p>
                   )}
+
+                  <div className="
+                    mt-3 sm:mt-4
+                    text-xs text-gray-500
+                    space-y-1
+                  ">
+
+                    <p title={formatExactTime(sprint.created_at)}>
+                      Created {formatRelativeTime(sprint.created_at)}
+                    </p>
+
+                    {sprint.completed_at && (
+                      <p
+                        className="text-blue-400"
+                        title={formatExactTime(sprint.completed_at)}
+                      >
+                        Completed {formatRelativeTime(sprint.completed_at)}
+                      </p>
+                    )}
+
+                  </div>
 
                 </div>
 
-                <p className="text-gray-400 mt-2">
-                  {sprint.goal}
-                </p>
-
-                {sprint.description && (
-                  <p className="text-gray-500 mt-3 whitespace-pre-wrap">
-                    {sprint.description}
-                  </p>
-                )}
-
-                <p
-                  className="text-xs text-gray-500 mt-3"
-                  title={formatExactTime(sprint.created_at)}
-                >
-                  Created {formatRelativeTime(sprint.created_at)}
-                </p>
-
-                {sprint.completed_at && (
-                  <p
-                    className="text-xs text-blue-400 mt-1"
-                    title={formatExactTime(sprint.completed_at)}
+                {user && (
+                  <button
+                    onClick={handleCopyLink}
+                    className="
+                      w-full sm:w-auto
+                      bg-green-500 hover:bg-green-400
+                      text-black
+                      px-4 sm:px-5
+                      py-2
+                      rounded-lg
+                      font-semibold
+                      transition
+                      text-sm sm:text-base
+                    "
                   >
-                    Completed {formatRelativeTime(sprint.completed_at)}
-                  </p>
+                    Copy Public Link
+                  </button>
                 )}
 
               </div>
 
-              {user && (
-                <button
-                  onClick={handleCopyLink}
-                  className="bg-green-500 text-black px-4 py-2 rounded font-semibold hover:bg-green-400"
-                >
-                  Copy Public Link
-                </button>
-              )}
-
             </div>
-
-          </div>
-        )}
-
+          )}
 
         </div>
 
@@ -443,7 +522,7 @@ function SprintDetail() {
           </div>
         )}
 
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 mt-8">
 
           <h2 className="text-lg font-semibold text-gray-300">
             Deep Dives
@@ -462,7 +541,7 @@ function SprintDetail() {
                 setTags("")
                 setIsDiveModalOpen(true)
               }}
-              className="bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded font-medium transition"
+              className="bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-xl font-medium transition"
             >
               + Add Deep Dive
             </button>
@@ -471,10 +550,9 @@ function SprintDetail() {
 
         </div>
 
-        {/* Deep Dive List */}
         <div className="space-y-4">
           {dives.length === 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded p-8 text-center">
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
 
               <h3 className="text-lg font-semibold text-green-400 mb-2">
                 No deep dives yet
@@ -502,7 +580,6 @@ function SprintDetail() {
                 className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition"
               >
 
-                {/* Header */}
                 <div className="flex justify-between items-start mb-4">
 
                   <div>
@@ -532,7 +609,6 @@ function SprintDetail() {
                       History
                     </button>
 
-                    {/* Tags */}
                     {dive.tags?.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2">
                         {dive.tags.map(tag => (
@@ -552,7 +628,6 @@ function SprintDetail() {
                       </div>
                     )}
 
-                    {/* Timestamp */}
                     <p
                       className="text-xs text-gray-500"
                       title={formatExactTime(dive.created_at)}
@@ -562,7 +637,6 @@ function SprintDetail() {
 
                   </div>
 
-                  {/* Actions */}
                   {sprint.status === "active" && (
                     <div className="flex gap-4 text-sm">
 
@@ -699,6 +773,206 @@ function SprintDetail() {
           onConfirm={confirmDeleteDive}
           onCancel={() => setDeleteDiveId(null)}
         />
+      </div> */}
+
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+      <button
+          onClick={() => navigate("/dashboard")}
+          className="mb-6 text-green-400 hover:underline"
+        >
+          ← Back
+        </button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* LEFT SIDEBAR */}
+          <div className="lg:col-span-1 space-y-4">
+
+            {/* Sprint Card */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+
+              <h1 className="text-xl font-bold text-green-400 mb-2">
+                {sprint.title}
+              </h1>
+
+              <p className="text-gray-400 text-sm mb-3">
+                {sprint.goal}
+              </p>
+
+              <button
+                onClick={handleCopyLink}
+                className="w-full bg-green-500 hover:bg-green-400 text-black py-2 rounded font-medium"
+              >
+                Copy Public Link
+              </button>
+
+            </div>
+
+
+            {/* Tags */}
+            {Object.keys(tagCounts).length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-400 mb-3">
+                    Tags
+                  </p>
+                  {selectedTag && (
+                    <button
+                      onClick={() => setSelectedTag(null)}
+                      className="text-xs text-red-400 mt-2"
+                    >
+                      Clear filter
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(tagCounts).map(([tag, count]) => (
+
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        setSelectedTag(tag)
+                      
+                        const first = dives.find(d => d.tags?.includes(tag))
+                        if (first) setSelectedDiveId(first._id)
+                      }}
+                      className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded"
+                    >
+                      #{tag} ({count})
+                    </button>
+
+                  ))}
+                  
+                </div>
+
+              </div>
+            )}
+
+
+            {/* Dive List */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl">
+
+              <div className="flex justify-between items-center p-4 border-b border-gray-800">
+
+                <p className="text-sm text-gray-400">
+                  Deep Dives
+                </p>
+
+                {sprint.status === "active" && (
+                  <button
+                    onClick={() => {
+                      setEditingDiveId(null)
+                      setSelectedDiveId(null)
+                      resetForm()
+                      setIsDiveModalOpen(true)
+                    }}
+                    className="text-green-400 text-sm hover:text-green-300"
+                  >
+                    + New
+                  </button>
+                )}
+
+              </div>
+
+              <div className="max-h-[500px] overflow-y-auto">
+
+                {filteredDives.map(dive => (
+
+                  <button
+                    key={dive._id}
+                    onClick={() => setSelectedDiveId(dive._id)}
+                    className={`w-full text-left px-4 py-3 border-b border-gray-800 hover:bg-gray-800 transition
+                    ${selectedDiveId === dive._id ? "bg-gray-800" : ""}`}
+                  >
+
+                    <p className="text-green-400 text-sm font-medium">
+                      {dive.title}
+                    </p>
+
+                    <p className="text-xs text-gray-500">
+                      {formatRelativeTime(dive.created_at)}
+                    </p>
+
+                  </button>
+
+                ))}
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          {/* RIGHT CONTENT */}
+          <div className="lg:col-span-2">
+
+            {!selectedDive && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-10 text-center">
+
+                <p className="text-gray-400">
+                  Select a deep dive to view
+                </p>
+
+              </div>
+            )}
+
+
+            {selectedDive && (
+
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+
+                {/* Header */}
+
+                <div className="flex justify-between items-center mb-6">
+
+                  <h2 className="text-xl font-semibold text-green-400">
+                    {selectedDive.title}
+                  </h2>
+
+                  <div className="flex items-center gap-2">
+                    {sprint.status === "active" && (
+                      <>
+                        <button
+                          onClick={() => handleEditDive(selectedDive)}
+                          className="text-yellow-400 hover:text-yellow-300 text-sm hover:underline hover:underline-4"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => setDeleteDiveId(selectedDive._id)}
+                          className="text-red-500 hover:text-red-400 hover:underline hover:underline-4"
+                          >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                </div>
+
+
+                {/* Sections */}
+
+                <Section title="Problem" content={selectedDive.problem} />
+                <Section title="Hypothesis" content={selectedDive.hypothesis} />
+                <Section title="Tests" content={selectedDive.tests} />
+                <Section title="Conclusion" content={selectedDive.conclusion} />
+
+              </div>
+
+            )}
+
+          </div>
+
+        </div>
+
+
       </div>
 
       <DeepDiveModal
@@ -719,6 +993,17 @@ function SprintDetail() {
         setTags={setTags}
         lastSaved={lastSaved}
         onSubmit={editingDiveId ? handleUpdateDive : handleCreateDive}
+      />
+
+      
+      <ConfirmModal
+        isOpen={!!deleteDiveId}
+        title="Delete Deep Dive"
+        message="Are you sure you want to delete this deep dive? This cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteDive}
+        onCancel={() => setDeleteDiveId(null)}
       />
 
     </div>
@@ -751,11 +1036,22 @@ function DeepDiveModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50
+      bg-black/80 backdrop-blur-sm
+      flex items-center justify-center
+      p-4">
 
-      <div className="bg-gray-900 border border-gray-800 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+      <div className="w-full max-w-5xl
+        max-h-[95vh]
+        overflow-y-auto
+        bg-gradient-to-b from-gray-900 to-gray-950
+        border border-gray-800
+        rounded-xl
+        shadow-2xl">
 
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center justify-between
+          px-6 py-4
+          border-b border-gray-800">
 
           <h2 className="text-lg font-semibold text-green-400">
             {editingDiveId ? "Edit Deep Dive" : "New Deep Dive"}
@@ -763,73 +1059,133 @@ function DeepDiveModal({
 
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-xl"
+            className="text-gray-400 hover:text-white
+            text-xl px-2 py-1 rounded
+            hover:bg-gray-800
+            transition"
           >
             ×
           </button>
 
-        </div>
-
-        {lastSaved && (
-          <p className="text-xs text-gray-500 mb-4">
-            Draft saved {formatRelativeTime(lastSaved)}
-          </p>
-        )}
+        </div>  
 
         <form
+          className=""
           onSubmit={async (e) => {
-            await onSubmit(e)
-            onClose()
+              await onSubmit(e)
+              onClose()
           }}
-        >
+          >
+          
+          <div className="px-2  flex flex-col gap-4">
+            <input
+              type="text"
+              placeholder="Deep Dive Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full
+              text-xl font-semibold
+              bg-transparent
+              border-none
+              outline-none
+              text-white
+              placeholder-gray-500
+              pt-3"
+              required
+            />
 
-          <input
-            type="text"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full mb-4 p-3 rounded bg-black border border-gray-700 focus:border-green-500 outline-none"
-            required
-          />
+            {/* <input
+              type="text"
+              placeholder="Tags (debugging, dns, linux)"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="w-full
+              text-sm
+              bg-gray-900
+              border border-gray-800
+              rounded-lg
+              px-3 py-2
+              focus:border-purple-500
+              outline-none"
+            /> */}
 
-          <input
-            type="text"
-            placeholder="Tags (debugging, dns, linux)"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            className="w-full mb-6 p-3 rounded bg-black border border-gray-700 focus:border-purple-500 outline-none"
-          />
+            <TagInput
+              value={tags}
+              onChange={setTags}
+              placeholder="debugging, dns, linux"
+            />
 
-          <MarkdownEditor label="Problem" value={problem} onChange={setProblem} />
+            <MarkdownEditor label="Problem" value={problem} onChange={setProblem} />
+            <MarkdownEditor label="Hypothesis" value={hypothesis} onChange={setHypothesis} />
+            <MarkdownEditor label="Tests" value={tests} onChange={setTests} />
+            <MarkdownEditor label="Conclusion" value={conclusion} onChange={setConclusion} />
+          </div>
 
-          <MarkdownEditor label="Hypothesis" value={hypothesis} onChange={setHypothesis} />
+          <div className="
+            flex items-center justify-between
+            px-6 py-4
+            border-t border-gray-800
+            bg-gray-950
+            ">
 
-          <MarkdownEditor label="Tests" value={tests} onChange={setTests} />
+            <div className="text-xs text-gray-500">
+              {lastSaved && `Draft saved ${formatRelativeTime(lastSaved)}`}
+            </div>
 
-          <MarkdownEditor label="Conclusion" value={conclusion} onChange={setConclusion} />
+            <div className="flex gap-3">
 
-          <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="
+                  px-4 py-2 rounded-lg
+                  border border-gray-700
+                  hover:border-gray-500
+                  text-gray-300
+                "
+              >
+                Cancel
+              </button>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-700 rounded text-gray-300 hover:border-gray-500"
-            >
-              Cancel
-            </button>
+              <button
+                type="submit"
+                className="
+                  px-5 py-2 rounded-lg
+                  bg-green-500 hover:bg-green-400
+                  text-black font-medium
+                "
+              >
+                {editingDiveId ? "Update Dive" : "Save Dive"}
+              </button>
 
-            <button
-              type="submit"
-              className="bg-green-500 hover:bg-green-400 text-black px-5 py-2 rounded font-medium"
-            >
-              {editingDiveId ? "Update" : "Save"}
-            </button>
+            </div>
 
           </div>
 
         </form>
 
       </div>
+
+    </div>
+  )
+}
+
+
+function EditorSection({ label, value, onChange }) {
+
+  return (
+    <div className="px-6  border-t border-gray-800">
+
+      <h3 className="text-sm text-gray-400 mb-3">
+        {label}
+      </h3>
+
+      <MarkdownEditor
+        label="Problem"
+        value={value}
+        onChange={onChange}
+        compact={false}
+      />
 
     </div>
   )

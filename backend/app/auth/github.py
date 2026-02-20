@@ -97,9 +97,10 @@ async def github_callback(code: str, response: Response):
     )
 
     return response
-
+    
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token")
+    response.delete_cookie("access_token") 
+    response.delete_cookie("refresh_token")
     return {"message": "Logged out successfully"}

@@ -2,7 +2,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { useState } from "react"
 
-function MarkdownEditor({ label, value, onChange }) {
+function MarkdownEditor({ label = "Content", value = "", onChange }) {
 
   const [showPreview, setShowPreview] = useState(true)
 
@@ -29,7 +29,7 @@ function MarkdownEditor({ label, value, onChange }) {
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-40 bg-gray-950 border border-gray-700 rounded p-3 text-white font-mono resize-none focus:border-purple-500 outline-none"
+          className="w-full h-40 bg-gray-950 border border-gray-700 rounded-xl p-3 text-white font-sans resize-none focus:border-purple-500 outline-none"
           placeholder={`Write ${label.toLowerCase()} in markdown...`}
         />
 
