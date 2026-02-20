@@ -5,6 +5,9 @@ import AuthSuccess from "./pages/AuthSuccess"
 import SprintDetail from "./pages/SprintDetail"
 import PublicSprint from "./pages/PublicSprint"
 import PublicProfile from "./pages/PublicProfile"
+import DivePage from "./pages/DivePage"
+import GraphPage from "./pages/GraphPage"
+
 
 function App() {
   return (
@@ -12,7 +15,10 @@ function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/sprint/:id" element={<SprintDetail />} />
+      <Route path="/dive/:diveId" element={<DivePage />} />
+      <Route path="/graph" element={<GraphPage />} />
       <Route path="/auth-success" element={<AuthSuccess />} />
+      
 
       <Route path="/u/:username" element={<PublicProfile />} />
       <Route path="/u/:username/:sprintId" element={<PublicSprint />} />

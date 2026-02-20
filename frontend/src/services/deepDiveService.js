@@ -5,6 +5,9 @@ export const deepDiveService = {
   getBySprint: (sprintId) =>
     api.get(`/deep-dives/sprint/${sprintId}`),
 
+  getById: (id) =>
+    api.get(`/deep-dives/${id}`),
+
   create: (body) =>
     api.post("/deep-dives", body),
 
