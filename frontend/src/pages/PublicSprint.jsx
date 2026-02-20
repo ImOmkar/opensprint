@@ -58,13 +58,20 @@ function PublicSprint() {
         <h1 className="text-3xl font-bold text-green-400">
           {data.sprint.title}
         </h1>
+
         <p className="text-gray-400 mt-2">
           {data.sprint.goal}
         </p>
+        
+        {data.sprint.description && (
+          <p className="text-gray-500 mt-3 whitespace-pre-wrap">
+            {data.sprint.description}
+          </p>
+        )}
+
         <p
           className="text-xs text-gray-500 mt-2"
-          title={formatExactTime(data.sprint.created_at)}
-        >
+          title={formatExactTime(data.sprint.created_at)}>
           Created {formatRelativeTime(data.sprint.created_at)}
         </p>
 

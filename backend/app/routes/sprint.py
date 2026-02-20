@@ -17,6 +17,7 @@ async def create_sprint(
     sprint_doc = {
         "title": sprint.title,
         "goal": sprint.goal,
+        "description": sprint.description,
         "start_date": sprint.start_date,
         "end_date": sprint.end_date,
         "user_id": current_user["github_id"],
@@ -67,6 +68,7 @@ async def update_sprint(
             "$set": {
                 "title": sprint.title,
                 "goal": sprint.goal,
+                "description": sprint.description,
                 "start_date": sprint.start_date,
                 "end_date": sprint.end_date
             }

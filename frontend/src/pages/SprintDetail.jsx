@@ -191,6 +191,12 @@ function SprintDetail() {
                 {sprint.goal}
               </p>
 
+              {sprint.description && (
+                <p className="text-gray-500 mt-3 whitespace-pre-wrap">
+                  {sprint.description}
+                </p>
+              )}
+
               <p
                 className="text-xs text-gray-500 mt-3"
                 title={formatExactTime(sprint.created_at)}

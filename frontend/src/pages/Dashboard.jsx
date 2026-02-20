@@ -17,6 +17,7 @@ function Dashboard() {
   const navigate = useNavigate()
   const [deleteSprintId, setDeleteSprintId] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [description, setDescription] = useState("")
 
   const [stats, setStats] = useState({
     active: 0,
@@ -102,6 +103,7 @@ function Dashboard() {
     const body = {
       title,
       goal,
+      description,
       start_date: new Date().toISOString(),
       end_date: new Date(Date.now() + 30*24*60*60*1000).toISOString()
     }
@@ -111,6 +113,7 @@ function Dashboard() {
 
     setTitle("")
     setGoal("")
+    setDescription("")
     loadSprints()
   }
 
@@ -120,6 +123,7 @@ function Dashboard() {
     const body = {
       title,
       goal,
+      description,
       start_date: new Date().toISOString(),
       end_date: new Date(Date.now() + 30*24*60*60*1000).toISOString()
     }
@@ -138,6 +142,7 @@ function Dashboard() {
     setEditingId(sprint._id)
     setTitle(sprint.title)
     setGoal(sprint.goal)
+    setDescription(sprint.description || "")
   }
 
   const confirmDeleteSprint = async () => {
@@ -240,6 +245,13 @@ function Dashboard() {
           onChange={(e) => setGoal(e.target.value)}
           className="w-full mb-3 p-2 rounded bg-black border border-gray-700"
           required
+        />
+
+        <textarea
+          placeholder="Sprint description (context, scope, approach)"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white mt-2"
         />
 
         <button
