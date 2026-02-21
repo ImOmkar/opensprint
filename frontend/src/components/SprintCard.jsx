@@ -44,21 +44,21 @@ function SprintCard({ sprint, onEdit, onDelete, onToggle }) {
 
           <button
             onClick={() => onToggle(sprint._id)}
-            className="text-blue-400 hover:underline"
+            className="text-blue-400 hover:underline hover:underline-offset-4"
           >
             {sprint.status === "completed" ? "Reopen" : "Complete"}
           </button>
 
           <button
             onClick={() => onEdit(sprint)}
-            className="text-yellow-400 hover:underline"
+            className="text-yellow-400 hover:underline hover:underline-offset-4"
           >
             Edit
           </button>
 
           <button
             onClick={() => onDelete(sprint._id)}
-            className="text-red-400 hover:underline"
+            className="text-red-400 hover:underline hover:underline-offset-4"
           >
             Delete
           </button>

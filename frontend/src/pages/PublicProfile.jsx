@@ -3,10 +3,12 @@ import { useParams, Link } from "react-router-dom"
 // import { api } from "../api/client"
 import { userService } from "../services/userService"
 import Spinner from "../components/Spinner"
+import PublicLayout from "../components/PublicLayout"
 
 
 function PublicProfile() {
   const { username } = useParams()
+
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -40,7 +42,7 @@ function PublicProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-10">
+    <PublicLayout>
 
       <div className="flex items-center gap-4 mb-10">
         <img
@@ -74,7 +76,7 @@ function PublicProfile() {
           <Link
             key={sprint._id}
             to={`/u/${data.user.username}/${sprint._id}`}
-            className="bg-gray-900 p-4 rounded border border-gray-800 hover:border-green-500 transition block"
+            className="bg-gray-900 p-4 rounded-xl border border-gray-800 hover:border-green-500 transition block"
           >
             <h4 className="text-lg font-bold text-green-400">
               {sprint.title}
@@ -87,7 +89,7 @@ function PublicProfile() {
         ))}
       </div>
 
-    </div>
+    </PublicLayout>
   )
 }
 

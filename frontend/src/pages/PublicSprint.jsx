@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom"
 import { userService } from "../services/userService"
 import { formatExactTime, formatRelativeTime } from "../utils/time"
 import Spinner from "../components/Spinner"
-
+import PublicLayout from "../components/PublicLayout"
 
 function PublicSprint() {
   const { username, sprintId } = useParams()
@@ -41,7 +41,7 @@ function PublicSprint() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-10">
+    <PublicLayout>
 
       <div className="flex items-center gap-4 mb-10">
         <img
@@ -97,7 +97,7 @@ function PublicSprint() {
         {data.deep_dives.map(dive => (
           <div
             key={dive._id}
-            className="bg-gray-900 p-6 rounded border border-gray-800"
+            className="bg-gray-900 p-6 rounded-xl border border-gray-800"
           >
             <h3 className="text-xl font-bold text-green-400 mb-3">
               {dive.title}
@@ -113,7 +113,7 @@ function PublicSprint() {
         ))}
       </div>
 
-    </div>
+    </PublicLayout>
   )
 }
 

@@ -7,9 +7,8 @@ import { userService } from "../services/userService"
 import ConfirmModal from "../components/ConfirmModal"
 import Spinner from "../components/Spinner"
 import { deepDiveService } from "../services/deepDiveService"
-
+import PageHeader from "../components/PageHeader"
 import DashboardLayout from "../components/DashboardLayout"
-import DashboardHeader from "../components/DashboardHeader"
 import StatGrid from "../components/StatGrid"
 import SprintGrid from "../components/SprintGrid"
 import SprintModal from "../components/SprintModal"
@@ -705,45 +704,53 @@ function Dashboard() {
     // </div>
 
     <DashboardLayout user={user}>
+      <div className="px-4 sm:px-6 py-6">
+        <PageHeader
+          title="Dashboard"
+          subtitle="Your engineering knowledge system"
+          actionLabel="New Sprint"
+          onAction={() => {
+            setEditingId(null)
+            setTitle("")
+            setGoal("")
+            setDescription("")
+            setIsSprintModalOpen(true)
+          }}
+        />
 
-      <DashboardHeader
-        user={user}
-        onNewSprint={() => setIsSprintModalOpen(true)}
-      />
+        <StatGrid stats={stats} />
 
-      <StatGrid stats={stats} />
+        <SprintGrid
+          sprints={sprints}
+          onEdit={handleEditSprint}
+          onDelete={setDeleteSprintId}
+          onToggle={handleToggleSprint}
+        />
 
-      <SprintGrid
-        sprints={sprints}
-        onEdit={handleEditSprint}
-        onDelete={setDeleteSprintId}
-        onToggle={handleToggleSprint}
-      />
+        
+        <SprintModal
+          isOpen={isSprintModalOpen}
+          onClose={() => setIsSprintModalOpen(false)}
+          editingId={editingId}
+          title={title}
+          goal={goal}
+          description={description}
+          setTitle={setTitle}
+          setGoal={setGoal}
+          setDescription={setDescription}
+          onSubmit={editingId ? handleUpdateSprint : handleCreateSprint}
+        />
 
-      
-      <SprintModal
-        isOpen={isSprintModalOpen}
-        onClose={() => setIsSprintModalOpen(false)}
-        editingId={editingId}
-        title={title}
-        goal={goal}
-        description={description}
-        setTitle={setTitle}
-        setGoal={setGoal}
-        setDescription={setDescription}
-        onSubmit={editingId ? handleUpdateSprint : handleCreateSprint}
-      />
-
-      <ConfirmModal
-        isOpen={!!deleteSprintId}
-        title="Delete Sprint"
-        message="Are you sure you want to delete this sprint? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={confirmDeleteSprint}
-        onCancel={() => setDeleteSprintId(null)}
-      />
-
+        <ConfirmModal
+          isOpen={!!deleteSprintId}
+          title="Delete Sprint"
+          message="Are you sure you want to delete this sprint? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDeleteSprint}
+          onCancel={() => setDeleteSprintId(null)}
+        />
+      </div>
     </DashboardLayout>
   )
 }

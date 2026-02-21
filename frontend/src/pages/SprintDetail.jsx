@@ -16,6 +16,7 @@ import { draftService } from "../services/draftService"
 import { versionService } from "../services/versionService"
 import DiffViewer from "../components/DiffViewer"
 import TagInput from "../components/TagInput"
+import DashboardLayout from "../components/DashboardLayout"
 
 function Section({ title, content }) {
 
@@ -322,465 +323,14 @@ function SprintDetail() {
   }
   
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* <div className="max-w-6xl mx-auto px-6 py-10">
+    // <div className="min-h-screen bg-black text-white">
+    <DashboardLayout user={user}>
+
+      <div className="px-4 sm:px-6 py-6">
 
         <button
           onClick={() => navigate("/dashboard")}
-          className="mb-6 text-green-400 hover:underline"
-        >
-          ← Back
-        </button>
-
-        <div className="flex justify-between items-center mb-6">
-
-          {!sprint ? (
-            <div className="text-gray-500">Loading sprint...</div>
-          ) : (
-            <div className="
-            w-full
-            max-w-md
-            sm:max-w-none
-            bg-gradient-to-br from-gray-900 to-gray-950
-            p-5 sm:p-6 lg:p-8
-            rounded-xl border border-gray-800 shadow-lg
-          ">
-
-              <div className="
-                flex flex-col sm:flex-row
-                sm:justify-between sm:items-start
-                gap-4 sm:gap-6
-              ">
-
-                <div className="flex-1 min-w-0">
-
-                  <div className="
-                    flex flex-col sm:flex-row
-                    sm:items-center
-                    gap-2 sm:gap-3
-                    mb-2
-                  ">
-
-                    <h1 className="
-                      text-xl sm:text-2xl lg:text-3xl
-                      font-bold text-green-400
-                      break-words
-                    ">
-                      {sprint.title}
-                    </h1>
-
-                    {sprint.status === "completed" && (
-                      <span className="
-                        text-xs
-                        bg-blue-500 text-black
-                        px-2 py-1 rounded
-                        w-fit
-                      ">
-                        Completed
-                      </span>
-                    )}
-
-                  </div>
-
-                  <p className="
-                    text-sm sm:text-base
-                    text-gray-400 mb-2
-                    break-words
-                  ">
-                    {sprint.goal}
-                  </p>
-
-                  {sprint.description && (
-                    <p className="
-                      text-sm sm:text-base
-                      text-gray-500 whitespace-pre-wrap
-                      break-words
-                    ">
-                      {sprint.description}
-                    </p>
-                  )}
-
-                  <div className="
-                    mt-3 sm:mt-4
-                    text-xs text-gray-500
-                    space-y-1
-                  ">
-
-                    <p title={formatExactTime(sprint.created_at)}>
-                      Created {formatRelativeTime(sprint.created_at)}
-                    </p>
-
-                    {sprint.completed_at && (
-                      <p
-                        className="text-blue-400"
-                        title={formatExactTime(sprint.completed_at)}
-                      >
-                        Completed {formatRelativeTime(sprint.completed_at)}
-                      </p>
-                    )}
-
-                  </div>
-
-                </div>
-
-                {user && (
-                  <button
-                    onClick={handleCopyLink}
-                    className="
-                      w-full sm:w-auto
-                      bg-green-500 hover:bg-green-400
-                      text-black
-                      px-4 sm:px-5
-                      py-2
-                      rounded-lg
-                      font-semibold
-                      transition
-                      text-sm sm:text-base
-                    "
-                  >
-                    Copy Public Link
-                  </button>
-                )}
-
-              </div>
-
-            </div>
-          )}
-
-        </div>
-
-        {Object.keys(tagCounts).length > 0 && (
-          <div className="mb-6">
-
-            <p className="text-sm text-gray-400 mb-2">
-              Tags in this sprint
-            </p>
-
-            <div className="flex flex-wrap gap-2">
-
-              {Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).map(([tag, count]) => (
-
-                <button
-                  key={tag}
-                  onClick={() => setSelectedTag(tag)}
-                  className={`text-xs border px-2 py-1 rounded-md transition flex items-center gap-1
-                    ${
-                      selectedTag === tag
-                        ? "bg-purple-500 text-black border-purple-500"
-                        : "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40"
-                    }`}
-                >
-                  <span>#{tag}</span>
-                  <span className="text-gray-400">
-                    ({count})
-                  </span>
-                </button>
-
-              ))}
-
-            </div>
-
-          </div>
-        )}
-
-        {sprint?.status === "completed" && (
-
-          <div className="mb-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-
-            <p className="text-blue-400 font-medium">
-              This sprint is completed.
-            </p>
-
-            <p className="text-blue-300 text-sm mt-1">
-              Deep dives are now locked and this sprint is read-only.
-            </p>
-
-          </div>
-
-        )}
-
-        {selectedTag && (
-          <div className="mb-4 flex items-center gap-3">
-
-            <span className="text-sm text-gray-400">
-              Filtering by
-            </span>
-
-            <span
-              className="text-xs bg-purple-500 text-black border border-purple-500 px-2 py-1 rounded-md"
-            >
-              #{selectedTag}
-            </span>
-
-            <button
-              onClick={() => setSelectedTag(null)}
-              className="text-sm text-red-400 hover:text-red-300"
-            >
-              Clear
-            </button>
-
-          </div>
-        )}
-
-        <div className="flex justify-between items-center mb-6 mt-8">
-
-          <h2 className="text-lg font-semibold text-gray-300">
-            Deep Dives
-          </h2>
-
-          {sprint?.status === "active" && (
-
-            <button
-              onClick={() => {
-                setEditingDiveId(null)
-                setTitle("")
-                setProblem("")
-                setHypothesis("")
-                setTests("")
-                setConclusion("")
-                setTags("")
-                setIsDiveModalOpen(true)
-              }}
-              className="bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-xl font-medium transition"
-            >
-              + Add Deep Dive
-            </button>
-
-          )}
-
-        </div>
-
-        <div className="space-y-4">
-          {dives.length === 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
-
-              <h3 className="text-lg font-semibold text-green-400 mb-2">
-                No deep dives yet
-              </h3>
-
-              <p className="text-gray-400 mb-3">
-                Log your first investigation, debugging session, or discovery.
-              </p>
-
-              <p className="text-gray-500 text-sm">
-                Every deep dive builds your engineering journal.
-              </p>
-
-            </div>
-          )}
-
-          {dives
-            .filter(dive =>
-              selectedTag ? dive.tags?.includes(selectedTag) : true
-            )
-            .map(dive => (
-
-              <div
-                key={dive._id}
-                className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition"
-              >
-
-                <div className="flex justify-between items-start mb-4">
-
-                  <div>
-
-                    <button
-                      onClick={() => toggleDive(dive._id)}
-                      className="text-left w-full">
-
-                      <div className="flex items-center gap-3">
-
-                        <span className="text-purple-400 text-sm">
-                          {expandedDiveIds.has(dive._id) ? "▼" : "▶"}
-                        </span>
-
-                        <h3 className="text-xl font-semibold text-green-400 hover:text-green-300 transition">
-                          {dive.title}
-                        </h3>
-
-                      </div>
-
-                    </button>
-
-                    <button
-                      onClick={() => loadVersions(dive._id)}
-                      className="text-blue-400 hover:text-blue-300"
-                    >
-                      History
-                    </button>
-
-                    {dive.tags?.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {dive.tags.map(tag => (
-                          <button
-                            key={tag}
-                            onClick={() => setSelectedTag(tag)}
-                            className={`text-xs border px-2 py-1 rounded-md transition
-                              ${
-                                selectedTag === tag
-                                  ? "bg-purple-500 text-black border-purple-500"
-                                  : "bg-purple-500/20 text-purple-300 border-purple-500/30 hover:bg-purple-500/40"
-                              }`}
-                          >
-                            #{tag}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    <p
-                      className="text-xs text-gray-500"
-                      title={formatExactTime(dive.created_at)}
-                    >
-                      Logged {formatRelativeTime(dive.created_at)}
-                    </p>
-
-                  </div>
-
-                  {sprint.status === "active" && (
-                    <div className="flex gap-4 text-sm">
-
-                      <button
-                        onClick={() => handleEditDive(dive)}
-                        className="text-yellow-400 hover:text-yellow-300"
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        onClick={() => setDeleteDiveId(dive._id)}
-                        className="text-red-500 hover:text-red-400"
-                      >
-                        Delete
-                      </button>
-
-                    </div>
-                  )}
-
-                </div>
-
-                <div
-                    className={`transition-all duration-300 overflow-hidden ${
-                      expandedDiveIds.has(dive._id)
-                        ? "max-h-[2000px] opacity-100 mt-4"
-                        : "max-h-0 opacity-0"
-                    }`}
-                  >
-                  {expandedDiveIds.has(dive._id) && (
-
-                    <div className="mt-4 border-t border-gray-800 pt-4">
-
-                      <Section title="Problem" content={dive.problem} />
-
-                      <Section title="Hypothesis" content={dive.hypothesis} />
-
-                      <Section title="Tests" content={dive.tests} />
-
-                      <Section title="Conclusion" content={dive.conclusion} />
-
-                    </div>
-
-                  )}
-                </div>
-
-                {showVersionsFor === dive._id && versions.length > 0 && (
-
-                  <div className="mt-6 border-t border-gray-800 pt-4">
-                  
-
-                    <p className="text-sm text-gray-400 mb-3">
-                      Version History
-                    </p>
-
-                    {versions.map(version => (
-
-                      <div
-                        key={version._id}
-                        className="bg-gray-950 border border-gray-800 rounded p-3 mb-3">
-                        
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={async () => {
-
-                              if (confirm("Restore this version? Current version will be saved.")) {
-
-                                await versionService.restore(dive._id, version._id)
-                              
-                                loadDives()
-
-                                
-                                setShowVersionsFor(null)
-                              
-                              }
-
-                            }}
-                            className="text-green-400 hover:text-green-300 text-xs">
-                            Restore this version
-                          </button>
-
-                          <button
-                            onClick={() => setCompareVersion(version)}
-                            className="text-purple-400 hover:text-purple-300 text-xs"
-                          >
-                            Compare with current
-                          </button>
-                        </div>
-
-                        <p className="text-xs text-gray-500 mb-2">
-                          {formatRelativeTime(version.versioned_at)}
-                        </p>
-
-                        <Section title="Problem" content={version.problem} />
-
-                        <Section title="Conclusion" content={version.conclusion} />
-
-                      </div>
-
-                    ))}
-
-                    {compareVersion && showVersionsFor === dive._id && (
-
-                      <div className="mt-4">
-
-                        <p className="text-sm text-purple-400 mb-2">
-                          Changes compared to current version
-                        </p>
-
-                        <DiffViewer
-                          oldText={compareVersion.problem}
-                          newText={dive.problem}
-                        />
-
-                      </div>
-
-                    )}
-                  </div>
-
-                )}
-
-              </div>
-
-          ))}
-
-        </div>
-
-        <ConfirmModal
-          isOpen={!!deleteDiveId}
-          title="Delete Deep Dive"
-          message="Are you sure you want to delete this deep dive? This cannot be undone."
-          confirmText="Delete"
-          cancelText="Cancel"
-          onConfirm={confirmDeleteDive}
-          onCancel={() => setDeleteDiveId(null)}
-        />
-      </div> */}
-
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-
-      <button
-          onClick={() => navigate("/dashboard")}
-          className="mb-6 text-green-400 hover:underline"
+          className="mb-6 text-green-400 hover:underline hover:underline-offset-4"
         >
           ← Back
         </button>
@@ -939,14 +489,14 @@ function SprintDetail() {
                       <>
                         <button
                           onClick={() => handleEditDive(selectedDive)}
-                          className="text-yellow-400 hover:text-yellow-300 text-sm hover:underline hover:underline-4"
+                          className="text-yellow-400 hover:text-yellow-300 text-sm hover:underline hover:underline-offset-4"
                         >
                           Edit
                         </button>
 
                         <button
                           onClick={() => setDeleteDiveId(selectedDive._id)}
-                          className="text-red-500 hover:text-red-400 hover:underline hover:underline-4"
+                          className="text-red-500 hover:text-red-400 hover:underline hover:underline-offset-4"
                           >
                           Delete
                         </button>
@@ -971,7 +521,6 @@ function SprintDetail() {
           </div>
 
         </div>
-
 
       </div>
 
@@ -1006,7 +555,8 @@ function SprintDetail() {
         onCancel={() => setDeleteDiveId(null)}
       />
 
-    </div>
+    {/* </div> */}
+    </DashboardLayout>
   )
 }
 
@@ -1093,21 +643,6 @@ function DeepDiveModal({
               pt-3"
               required
             />
-
-            {/* <input
-              type="text"
-              placeholder="Tags (debugging, dns, linux)"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className="w-full
-              text-sm
-              bg-gray-900
-              border border-gray-800
-              rounded-lg
-              px-3 py-2
-              focus:border-purple-500
-              outline-none"
-            /> */}
 
             <TagInput
               value={tags}
