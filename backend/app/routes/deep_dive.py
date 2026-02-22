@@ -7,9 +7,9 @@ from bson import ObjectId
 from app.utils.tag_utils import normalize_tags
 from typing import List
 from pymongo import ReturnDocument
+from app.utils.wiki_links import extract_wiki_links
 
 router = APIRouter(prefix="/deep-dives", tags=["Deep Dives"])
-
 
 @router.post("/")
 async def create_deep_dive(
@@ -17,7 +17,7 @@ async def create_deep_dive(
     current_user=Depends(get_current_user)
 ):
 
-    # Verify sprint belongs to user
+    # Validate sprint properly
     try:
         sprint = await database["sprints"].find_one(
             {
@@ -37,15 +37,27 @@ async def create_deep_dive(
             detail="Cannot add deep dive to completed sprint"
         )
 
-    # Instead of ObjectId conversion complexity for now,
-    # we validate by checking sprint_id string match
+    # Combine content for wiki link parsing
+    all_text = " ".join([
+        deep_dive.title or "",
+        deep_dive.problem or "",
+        deep_dive.hypothesis or "",
+        deep_dive.tests or "",
+        deep_dive.conclusion or ""
+    ])
 
-    sprint = await database["sprints"].find_one(
-        {"_id": {"$exists": True}, "user_id": current_user["github_id"]}
-    )
+    linked_titles = extract_wiki_links(all_text)
 
-    if not sprint:
-        raise HTTPException(status_code=403, detail="Invalid sprint")
+    resolved_ids = []
+
+    for title in linked_titles:
+        linked_dive = await database["deep_dives"].find_one({
+            "title": title,
+            "user_id": current_user["github_id"]
+        })
+
+        if linked_dive:
+            resolved_ids.append(str(linked_dive["_id"]))
 
     deep_dive_doc = {
         "sprint_id": deep_dive.sprint_id,
@@ -56,10 +68,12 @@ async def create_deep_dive(
         "tests": deep_dive.tests,
         "conclusion": deep_dive.conclusion,
         "tags": normalize_tags(deep_dive.tags),
-        "created_at": datetime.now()
+        "created_at": datetime.utcnow(),
+        "references": resolved_ids
     }
 
     result = await database["deep_dives"].insert_one(deep_dive_doc)
+
     deep_dive_doc["_id"] = str(result.inserted_id)
 
     return deep_dive_doc
@@ -113,6 +127,29 @@ async def update_deep_dive(
     }
 
     await database["deep_dive_versions"].insert_one(version_data)
+    
+    # Recalculate wiki references
+    all_text = " ".join([
+        body.title or "",
+        body.problem or "",
+        body.hypothesis or "",
+        body.tests or "",
+        body.conclusion or ""
+    ])
+
+    linked_titles = extract_wiki_links(all_text)
+
+    resolved_ids = []
+
+    for title in linked_titles:
+        linked_dive = await database["deep_dives"].find_one({
+            "title": title,
+            "user_id": current_user["github_id"]
+        })
+    
+        if linked_dive and str(linked_dive["_id"]) != dive_id:
+            
+            resolved_ids.append(str(linked_dive["_id"]))
 
     update_data = {
         "title": body.title,
@@ -120,7 +157,8 @@ async def update_deep_dive(
         "hypothesis": body.hypothesis,
         "tests": body.tests,
         "conclusion": body.conclusion,
-        "tags": body.tags,
+        "tags": normalize_tags(body.tags),
+        "references": resolved_ids,
         "updated_at": datetime.utcnow()
     }
 
@@ -255,58 +293,25 @@ async def restore_version(
 @router.get("/graph")
 async def get_graph(current_user=Depends(get_current_user)):
 
-    dives_cursor = database["deep_dives"].find({
+    dives = await database["deep_dives"].find({
         "user_id": current_user["github_id"]
-    })
-
-    dives = await dives_cursor.to_list(length=None)
+    }).to_list(1000)
 
     nodes = []
     links = []
 
-    title_to_id = {}
-
-    # Create nodes
     for dive in dives:
-
-        dive_id = str(dive["_id"])
-        title = dive["title"]
-
         nodes.append({
-            "id": dive_id,
-            "name": title
+            "id": str(dive["_id"]),
+            "name": dive["title"]
         })
 
-        title_to_id[title] = dive_id
-
-    # Create links
-    import re
-
     for dive in dives:
-
-        source_id = str(dive["_id"])
-
-        content_fields = [
-            dive.get("problem", ""),
-            dive.get("hypothesis", ""),
-            dive.get("tests", ""),
-            dive.get("conclusion", "")
-        ]
-
-        for content in content_fields:
-
-            matches = re.findall(r"\[\[(.*?)\]\]", content)
-
-            for match in matches:
-
-                target_id = title_to_id.get(match)
-
-                if target_id:
-
-                    links.append({
-                        "source": source_id,
-                        "target": target_id
-                    })
+        for ref_id in dive.get("references", []):
+            links.append({
+                "source": str(dive["_id"]),
+                "target": ref_id
+            })
 
     return {
         "nodes": nodes,
@@ -331,42 +336,15 @@ async def get_dive_by_id(
 
     return dive
 
-
 @router.get("/{dive_id}/backlinks")
-async def get_backlinks(
-    dive_id: str,
-    current_user=Depends(get_current_user)
-):
+async def get_backlinks(dive_id: str, current_user=Depends(get_current_user)):
 
-    dive = await database["deep_dives"].find_one({
-        "_id": ObjectId(dive_id),
+    backlinks = await database["deep_dives"].find({
+        "references": dive_id,
         "user_id": current_user["github_id"]
-    })
+    }).to_list(100)
 
-    if not dive:
-        return []
+    for dive in backlinks:
+        dive["_id"] = str(dive["_id"])
 
-    title = dive["title"]
-
-    cursor = database["deep_dives"].find({
-        "user_id": current_user["github_id"],
-        "$or": [
-            {"problem": {"$regex": f"\\[\\[{title}\\]\\]", "$options": "i"}},
-            {"hypothesis": {"$regex": f"\\[\\[{title}\\]\\]", "$options": "i"}},
-            {"tests": {"$regex": f"\\[\\[{title}\\]\\]", "$options": "i"}},
-            {"conclusion": {"$regex": f"\\[\\[{title}\\]\\]", "$options": "i"}}
-        ]
-    })
-
-    results = []
-
-    async for doc in cursor:
-        results.append({
-            "_id": str(doc["_id"]),
-            "title": doc["title"],
-            "sprint_id": doc["sprint_id"],
-            "created_at": doc["created_at"]
-        })
-
-    return results
-
+    return backlinks

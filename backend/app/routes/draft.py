@@ -70,7 +70,7 @@ async def get_draft(
         "hypothesis": draft.get("hypothesis", ""),
         "tests": draft.get("tests", ""),
         "conclusion": draft.get("conclusion", ""),
-        "tags": draft.get("tags", "")
+        "tags": draft.get("tags", [])
     }
 
 

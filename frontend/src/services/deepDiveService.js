@@ -15,5 +15,8 @@ export const deepDiveService = {
     api.put(`/deep-dives/${id}`, body),
 
   delete: (id) =>
-    api.delete(`/deep-dives/${id}`)
+    api.delete(`/deep-dives/${id}`),
+
+  getBacklinks: (id) =>
+    api.get(`/deep-dives/${id}/backlinks`)
 }

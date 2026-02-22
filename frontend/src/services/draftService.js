@@ -3,7 +3,7 @@ import { api } from "../api/client"
 export const draftService = {
 
   save: (data) =>
-    api.post("/drafts", data),
+    api.post("/drafts/", data),
 
   load: (sprintId) =>
     api.get(`/drafts/${sprintId}`),

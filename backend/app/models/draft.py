@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 
 class DraftCreate(BaseModel):
@@ -9,4 +9,5 @@ class DraftCreate(BaseModel):
     hypothesis: Optional[str] = ""
     tests: Optional[str] = ""
     conclusion: Optional[str] = ""
-    tags: Optional[str] = ""
+    # tags: Optional[str] = ""
+    tags: List[str] = []
