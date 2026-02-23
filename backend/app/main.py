@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.db.database import database
-from app.routes import user, sprint, deep_dive, search
+from app.routes import user, sprint, deep_dive, search, notifications
 from app.auth import github
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import draft
@@ -22,6 +22,7 @@ app.include_router(sprint.router)
 app.include_router(deep_dive.router)
 app.include_router(search.router)
 app.include_router(draft.router)
+app.include_router(notifications.router)
 
 @app.get("/")
 async def root():

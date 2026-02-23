@@ -371,6 +371,25 @@ async def get_activity(current_user=Depends(get_current_user)):
             next_milestone = m
             break
         
+    if current_streak in milestones:
+
+        existing = await database["notifications"].find_one({
+            "user_id": current_user["github_id"],
+            "type": "milestone",
+            "meta.milestone": current_streak
+        })
+
+        if not existing:
+            await database["notifications"].insert_one({
+                "user_id": current_user["github_id"],
+                "type": "milestone",
+                "title": f"{current_streak} Day Streak 🔥",
+                "message": f"You've reached {current_streak} consecutive days.",
+                "meta": {"milestone": current_streak},
+                "is_read": False,
+                "created_at": datetime.utcnow()
+            })
+        
     today = datetime.now().date().isoformat()
     wrote_today = today in activity
 
