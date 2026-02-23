@@ -59,7 +59,7 @@ function SprintDetail() {
   const [sprint, setSprint] = useState(null)
   const [expandedDiveIds, setExpandedDiveIds] = useState(new Set())
   const [editingDiveId, setEditingDiveId] = useState(null)
-  const [deleteDiveId, setDeleteDiveId] = useState(null)  
+  const [deleteDiveId, setDeleteDiveId] = useState(null)
 
   const [versions, setVersions] = useState([])
   const [showVersionsFor, setShowVersionsFor] = useState(null)
@@ -82,15 +82,15 @@ function SprintDetail() {
 
   const tagCounts = dives.reduce((acc, dive) => {
     if (!dive.tags) return acc
-  
+
     dive.tags.forEach(tag => {
       acc[tag] = (acc[tag] || 0) + 1
     })
-  
+
     return acc
   }, {})
 
-  
+
   const [selectedDiveId, setSelectedDiveId] = useState(null)
   const selectedDive = dives.find(d => d._id === selectedDiveId)
 
@@ -104,7 +104,7 @@ function SprintDetail() {
       setIsDiveModalOpen(false)
       return
     }
-  
+
     if (hasDraftContent && !editingDiveId) {
       setShowDraftNotice(true)
     } else {
@@ -120,14 +120,14 @@ function SprintDetail() {
       deepDiveService.getBySprint(id)
     ])
       .then(([userData, sprintsData, divesData]) => {
-  
+
         setUser(userData)
-  
+
         const current = sprintsData.find(s => s._id === id)
         setSprint(current)
-  
+
         setDives(divesData)
-  
+
         setLoading(false)
 
         // auto select first dive
@@ -138,7 +138,7 @@ function SprintDetail() {
       })
       .catch(() => navigate("/"))
 
-      draftService.load(id)
+    draftService.load(id)
       .then(draft => {
 
         if (!draft) return
@@ -152,24 +152,24 @@ function SprintDetail() {
         setTags(draft.tags || [])
 
       })
-      
+
   }, [id])
 
   useEffect(() => {
     if (!selectedDiveId) return
-  
+
     deepDiveService.getBacklinks(selectedDiveId)
       .then(setBacklinks)
       .catch(() => setBacklinks([]))
-  
+
   }, [selectedDiveId])
 
   useEffect(() => {
 
     if (!isDiveModalOpen || editingDiveId) return
-  
+
     const timeout = setTimeout(async () => {
-  
+
       await draftService.save({
         sprint_id: id,
         title,
@@ -179,14 +179,14 @@ function SprintDetail() {
         conclusion,
         tags
       })
-  
+
       setLastSaved(new Date())
       setDraftVersion(prev => prev + 1)
-  
+
     }, 800)
-  
+
     return () => clearTimeout(timeout)
-  
+
   }, [title, problem, hypothesis, tests, conclusion, tags, id, isDiveModalOpen])
 
   const loadSprint = () => {
@@ -197,28 +197,28 @@ function SprintDetail() {
       })
       .catch(err => console.error(err))
   }
-  
+
   const loadVersions = async (diveId) => {
 
     const data = await versionService.getVersions(diveId)
-  
+
     setVersions(data)
-  
+
     setShowVersionsFor(diveId)
-  
+
   }
-  
+
   const loadDives = () => {
     deepDiveService.getBySprint(id)
       .then(data => setDives(data))
       .catch(() => navigate("/"))
   }
-  
+
 
   const handleCreateDive = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-  
+
     const body = {
       sprint_id: id,
       title,
@@ -232,18 +232,18 @@ function SprintDetail() {
       //   .filter(Boolean)
       tags: tags
     }
-  
+
     const newDive = await deepDiveService.create(body)
-  
+
     await draftService.delete(id)
     setDraftVersion(prev => prev + 1)
-  
+
     setExpandedDiveIds(prev => new Set([...prev, newDive._id]))
 
     setDives(prev => [newDive, ...prev])
-  
+
     setSelectedDiveId(newDive._id)   // immediate UI update
-  
+
     setTitle("")
     setProblem("")
     setHypothesis("")
@@ -258,12 +258,12 @@ function SprintDetail() {
   const confirmDeleteDive = async () => {
 
     await deepDiveService.delete(deleteDiveId)
-  
+
     setDives(prev => prev.filter(d => d._id !== deleteDiveId))
-  
+
     if (selectedDiveId === deleteDiveId)
       setSelectedDiveId(null)
-  
+
     setDeleteDiveId(null)
   }
 
@@ -278,7 +278,7 @@ function SprintDetail() {
     setTags(dive.tags || [])
     setIsDiveModalOpen(true)
   }
-  
+
   const handleUpdateDive = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -296,9 +296,9 @@ function SprintDetail() {
       //   .filter(Boolean)
       tags: tags
     }
-  
+
     await deepDiveService.update(editingDiveId, body)
-  
+
     // update locally using existing dive
     setDives(prev =>
       prev.map(d =>
@@ -309,11 +309,11 @@ function SprintDetail() {
     )
 
     setExpandedDiveIds(prev => new Set([...prev, editingDiveId]))
-  
+
     await draftService.delete(id)
-  
+
     setEditingDiveId(null)
-  
+
     setTitle("")
     setProblem("")
     setHypothesis("")
@@ -326,27 +326,27 @@ function SprintDetail() {
 
   const handleCopyLink = () => {
     if (!user) return
-  
+
     const link = `${window.location.origin}/u/${user.username}/${id}`
-  
+
     navigator.clipboard.writeText(link)
-  
+
     alert("Public link copied")
   }
 
   const toggleDive = (id) => {
 
     const newSet = new Set(expandedDiveIds)
-  
+
     if (newSet.has(id)) {
       newSet.delete(id)
     } else {
       newSet.add(id)
     }
-  
+
     setExpandedDiveIds(newSet)
   }
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -356,8 +356,8 @@ function SprintDetail() {
   }
 
   const filteredDives = selectedTag
-  ? dives.filter(d => d.tags?.includes(selectedTag))
-  : dives
+    ? dives.filter(d => d.tags?.includes(selectedTag))
+    : dives
 
   const resetForm = () => {
     setEditingDiveId(null)
@@ -368,7 +368,7 @@ function SprintDetail() {
     setConclusion("")
     setTags([])
   }
-  
+
   return (
     // <div className="min-h-screen bg-black text-white">
     <DashboardLayout user={user}>
@@ -447,7 +447,7 @@ function SprintDetail() {
                       key={tag}
                       onClick={() => {
                         setSelectedTag(tag)
-                      
+
                         const first = dives.find(d => d.tags?.includes(tag))
                         if (first) setSelectedDiveId(first._id)
                       }}
@@ -457,7 +457,7 @@ function SprintDetail() {
                     </button>
 
                   ))}
-                  
+
                 </div>
 
               </div>
@@ -559,7 +559,7 @@ function SprintDetail() {
                         <button
                           onClick={() => setDeleteDiveId(selectedDive._id)}
                           className="text-red-500 hover:text-red-400 hover:underline hover:underline-offset-4"
-                          >
+                        >
                           Delete
                         </button>
                       </>
@@ -606,7 +606,7 @@ function SprintDetail() {
 
                   </div>
 
-                  )}
+                )}
 
               </div>
 
@@ -639,7 +639,7 @@ function SprintDetail() {
         onSubmit={editingDiveId ? handleUpdateDive : handleCreateDive}
       />
 
-      
+
       <ConfirmModal
         isOpen={!!deleteDiveId}
         title="Delete Deep Dive"
@@ -663,7 +663,7 @@ function SprintDetail() {
         onCancel={() => setShowDraftNotice(false)}
       />
 
-    {/* </div> */}
+      {/* </div> */}
     </DashboardLayout>
   )
 }
@@ -725,10 +725,10 @@ function DeepDiveModal({
             ×
           </button>
 
-        </div>  
+        </div>
 
         <form onSubmit={onSubmit}>
-          
+
           <div className="px-2  flex flex-col gap-4">
             <input
               type="text"

@@ -434,10 +434,9 @@ function NavItem({ label, active, onClick }) {
         px-3 py-2
         rounded-lg
         transition
-        ${
-          active
-            ? "bg-gray-800 text-white"
-            : "text-gray-300 hover:bg-gray-800 hover:text-white"
+        ${active
+          ? "bg-gray-800 text-white"
+          : "text-gray-300 hover:bg-gray-800 hover:text-white"
         }
       `}
     >

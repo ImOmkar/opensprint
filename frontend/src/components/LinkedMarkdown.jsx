@@ -53,16 +53,16 @@ function LinkedMarkdown({ content }) {
 
   return (
     <div className="prose prose-invert max-w-none">
-  
+
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           a: ({ href, children }) => {
-  
+
             if (href.startsWith("opensprint://")) {
-  
+
               const id = href.replace("opensprint://", "")
-  
+
               return (
                 <button
                   onClick={() => navigate(`/dive/${id}`)}
@@ -72,14 +72,14 @@ function LinkedMarkdown({ content }) {
                 </button>
               )
             }
-  
+
             return <a href={href}>{children}</a>
           }
         }}
       >
         {processContent}
       </ReactMarkdown>
-  
+
     </div>
   )
 

@@ -23,7 +23,7 @@ function PublicProfile() {
         setLoading(false)
       })
   }, [username])
-  
+
 
   if (!data) {
     return (

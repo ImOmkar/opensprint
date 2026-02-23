@@ -19,17 +19,17 @@ function DivePage() {
 
     deepDiveService.getById(diveId)
       .then(async (data) => {
-  
+
         setDive(data)
-  
+
         const links = await backlinkService.get(diveId)
-  
+
         setBacklinks(links)
-  
+
         setLoading(false)
       })
       .catch(() => navigate("/dashboard"))
-  
+
   }, [diveId])
 
   if (loading) {
@@ -78,37 +78,37 @@ function DivePage() {
 
         <div className="mt-10 border-t border-gray-800 pt-6">
 
-            <h2 className="text-purple-400 font-semibold mb-4">
-                Referenced by
-            </h2>
+          <h2 className="text-purple-400 font-semibold mb-4">
+            Referenced by
+          </h2>
 
-            <div className="space-y-2">
+          <div className="space-y-2">
 
-                {backlinks.map(link => (
+            {backlinks.map(link => (
 
-                <button
-                    key={link._id}
-                    onClick={() => navigate(`/dive/${link._id}`)}
-                    className="block text-left w-full bg-gray-900 border border-gray-800 rounded p-3 hover:border-purple-500"
-                >
+              <button
+                key={link._id}
+                onClick={() => navigate(`/dive/${link._id}`)}
+                className="block text-left w-full bg-gray-900 border border-gray-800 rounded p-3 hover:border-purple-500"
+              >
 
-                    <p className="text-green-400 font-semibold">
-                    {link.title}
-                    </p>
+                <p className="text-green-400 font-semibold">
+                  {link.title}
+                </p>
 
-                    <p className="text-xs text-gray-500">
-                    {formatRelativeTime(link.created_at)}
-                    </p>
+                <p className="text-xs text-gray-500">
+                  {formatRelativeTime(link.created_at)}
+                </p>
 
-                </button>
+              </button>
 
-                ))}
+            ))}
 
-            </div>
+          </div>
 
         </div>
 
-        )}
+      )}
 
     </div>
   )

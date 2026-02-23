@@ -22,7 +22,7 @@ function PublicSprint() {
         setLoading(false)
       })
   }, [username, sprintId])
-  
+
 
   if (!data) {
     return (
@@ -62,7 +62,7 @@ function PublicSprint() {
         <p className="text-gray-400 mt-2">
           {data.sprint.goal}
         </p>
-        
+
         {data.sprint.description && (
           <p className="text-gray-500 mt-3 whitespace-pre-wrap">
             {data.sprint.description}

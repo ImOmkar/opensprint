@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.db.database import database
 from app.models.deep_dive import DeepDiveCreate
 from app.auth.dependencies import get_current_user
@@ -317,6 +317,72 @@ async def get_graph(current_user=Depends(get_current_user)):
         "nodes": nodes,
         "links": links
     }
+    
+    
+@router.get("/activity")
+async def get_activity(current_user=Depends(get_current_user)):
+
+    dives = await database["deep_dives"].find({
+        "user_id": current_user["github_id"]
+    }).to_list(10000)
+
+    activity = {}
+
+    for dive in dives:
+        date_str = dive["created_at"].date().isoformat()
+        activity[date_str] = activity.get(date_str, 0) + 1
+
+    today = datetime.now().date()
+
+    # calculate streaks
+    sorted_dates = sorted([
+        datetime.fromisoformat(d).date()
+        for d in activity.keys()
+    ])
+
+    longest_streak = 0
+    streak = 0
+    prev = None
+
+    for d in sorted_dates:
+        if prev and (d - prev).days == 1:
+            streak += 1
+        else:
+            streak = 1
+
+        longest_streak = max(longest_streak, streak)
+        prev = d
+
+    # current streak
+    current_streak = 0
+    check_date = today
+
+    while check_date.isoformat() in activity:
+        current_streak += 1
+        check_date -= timedelta(days=1)
+        
+    milestones = [7, 30, 90, 180, 365]
+
+    earned = [m for m in milestones if current_streak >= m]
+
+    next_milestone = None
+    for m in milestones:
+        if current_streak < m:
+            next_milestone = m
+            break
+        
+    today = datetime.now().date().isoformat()
+    wrote_today = today in activity
+
+    return {
+        "activity": activity,
+        "current_streak": current_streak,
+        "longest_streak": longest_streak,
+        "total_active_days": len(activity),
+        "earned_milestones": earned,
+        "next_milestone": next_milestone,
+        "wrote_today": wrote_today
+    }
 
 @router.get("/{dive_id}")
 async def get_dive_by_id(
@@ -348,3 +414,5 @@ async def get_backlinks(dive_id: str, current_user=Depends(get_current_user)):
         dive["_id"] = str(dive["_id"])
 
     return backlinks
+
+
