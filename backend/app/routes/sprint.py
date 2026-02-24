@@ -4,6 +4,7 @@ from app.db.database import database
 from app.models.sprint import SpringCreate
 from app.auth.dependencies import get_current_user
 from bson import ObjectId
+from app.services.ai_service import generate_sprint_summary
 
 router = APIRouter(prefix="/sprints", tags=["Sprints"])
 
@@ -180,3 +181,29 @@ async def toggle_sprint(
         )
 
     return {"status": new_status}
+
+
+@router.post("/{sprint_id}/generate-summary")
+async def generate_summary(sprint_id: str, current_user=Depends(get_current_user)):
+
+    sprint = await database["sprints"].find_one({
+        "_id": ObjectId(sprint_id),
+        "user_id": current_user["github_id"]
+    })
+
+    if not sprint:
+        return {"error": "Sprint not found"}
+
+    dives = await database["deepdives"].find({
+        "sprint_id": sprint_id,
+        "user_id": current_user["github_id"]
+    }).to_list(None)
+
+    summary = await generate_sprint_summary(sprint, dives)
+
+    await database["sprints"].update_one(
+        {"_id": ObjectId(sprint_id)},
+        {"$set": {"ai_summary": summary}}
+    )
+
+    return {"summary": summary}

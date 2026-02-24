@@ -18,7 +18,7 @@ import DiffViewer from "../components/DiffViewer"
 import TagInput from "../components/TagInput"
 import DashboardLayout from "../components/DashboardLayout"
 import DraftList from "../components/DraftList"
-
+import { aiService } from "../services/aiService"
 
 function Section({ title, content }) {
 
@@ -94,10 +94,27 @@ function SprintDetail() {
   const [selectedDiveId, setSelectedDiveId] = useState(null)
   const selectedDive = dives.find(d => d._id === selectedDiveId)
 
+  const [aiSummary, setAiSummary] = useState("")
+  const [summaryOpen, setSummaryOpen] = useState(false)
+  const [loadingSummary, setLoadingSummary] = useState(false)
+
+ 
+
   const hasDraftContent =
     !!title || !!problem || !!hypothesis || !!tests || !!conclusion || tags.length > 0
 
   const [showDraftNotice, setShowDraftNotice] = useState(false)
+  
+  const handleGenerateSummary = async () => {
+    setSummaryOpen(true)
+    setLoadingSummary(true)
+  
+    const summary = await aiService.generateSummary(id)
+  
+    setAiSummary(summary)
+    setLoadingSummary(false)
+  }
+
 
   const handleModalClose = () => {
     if (isSubmitting) {
@@ -398,12 +415,21 @@ function SprintDetail() {
                 {sprint.goal}
               </p>
 
-              <button
-                onClick={handleCopyLink}
-                className="w-full bg-green-500 hover:bg-green-400 text-black py-2 rounded font-medium"
-              >
-                Copy Public Link
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCopyLink}
+                  className="w-full px-4 py-2 bg-green-600 hover:bg-green-500 text-black rounded-lg text-sm"
+                >
+                  Copy Public Link
+                </button>
+
+                <button
+                  onClick={handleGenerateSummary}
+                  className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm"
+                >
+                  {loadingSummary ? "Generating..." : "✨ Generate AI Summary"}
+                </button>
+              </div>
 
             </div>
 
@@ -663,6 +689,63 @@ function SprintDetail() {
         onCancel={() => setShowDraftNotice(false)}
       />
 
+      {/* AI Summary sideover panel */}
+      {summaryOpen && (
+        <div className="fixed inset-0 z-50 flex">
+
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSummaryOpen(false)}
+          />
+
+          {/* Panel */}
+          <div className="
+            relative ml-auto
+            w-full sm:w-[450px] md:w-[500px]
+            h-full
+            bg-gray-950 border-l border-gray-800
+            shadow-2xl
+            flex flex-col
+            animate-slideIn
+          ">
+
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-gray-800">
+              <h3 className="text-purple-400 font-semibold">
+                AI Sprint Summary
+              </h3>
+
+              <button
+                onClick={() => setSummaryOpen(false)}
+                className="text-gray-400 hover:text-white text-xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5">
+
+              {loadingSummary && (
+                <div className="text-gray-400 text-sm">
+                  Generating summary...
+                </div>
+              )}
+
+              {!loadingSummary && aiSummary && (
+                <div className="prose prose-invert max-w-none text-sm">
+                  <LinkedMarkdown content={aiSummary} />
+                </div>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
       {/* </div> */}
     </DashboardLayout>
   )
@@ -690,6 +773,52 @@ function DeepDiveModal({
   lastSaved,
   onSubmit
 }) {
+
+  const [improvingField, setImprovingField] = useState(null)
+  const [suggestingTags, setSuggestingTags] = useState(false)
+
+  const handleSuggestTags = async () => {
+
+    const combined = `
+      ${title}
+      ${problem}
+      ${hypothesis}
+      ${tests}
+      ${conclusion}
+    `
+  
+    if (!combined.trim()) return
+  
+    setSuggestingTags(true)
+  
+    try {
+      const newTags = await aiService.suggestTags(combined)
+  
+      const merged = Array.from(new Set([...tags, ...newTags]))
+      setTags(merged)
+  
+    } catch (err) {
+      console.error(err)
+    }
+  
+    setSuggestingTags(false)
+  }
+
+
+  const handleImprove = async (fieldName, value, setter) => {
+    if (!value?.trim()) return
+  
+    setImprovingField(fieldName)
+  
+    try {
+      const improved = await aiService.improve(value, fieldName)
+      setter(improved)
+    } catch (err) {
+      console.error(err)
+    }
+  
+    setImprovingField(null)
+  }
 
   if (!isOpen) return null
 
@@ -749,13 +878,15 @@ function DeepDiveModal({
             <TagInput
               value={tags}
               onChange={setTags}
+              onSuggest={handleSuggestTags}
+              suggesting={suggestingTags}
               placeholder="debugging, dns, linux"
             />
 
-            <MarkdownEditor label="Problem" value={problem} onChange={setProblem} />
-            <MarkdownEditor label="Hypothesis" value={hypothesis} onChange={setHypothesis} />
-            <MarkdownEditor label="Tests" value={tests} onChange={setTests} />
-            <MarkdownEditor label="Conclusion" value={conclusion} onChange={setConclusion} />
+            <MarkdownEditor label="Problem" value={problem} onChange={setProblem} onImprove={() => handleImprove("problem", problem, setProblem)} improving={improvingField === "problem"} />
+            <MarkdownEditor label="Hypothesis" value={hypothesis} onChange={setHypothesis} onImprove={() => handleImprove("hypothesis", hypothesis, setHypothesis)} improving={improvingField === "hypothesis"} />
+            <MarkdownEditor label="Tests" value={tests} onChange={setTests} onImprove={() => handleImprove("tests", tests, setTests)} improving={improvingField === "tests"} />
+            <MarkdownEditor label="Conclusion" value={conclusion} onChange={setConclusion} onImprove={() => handleImprove("conclusion", conclusion, setConclusion)} improving={improvingField === "conclusion"} />
           </div>
 
           <div className="
@@ -802,6 +933,8 @@ function DeepDiveModal({
         </form>
 
       </div>
+
+
 
     </div>
   )
