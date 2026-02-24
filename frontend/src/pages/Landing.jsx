@@ -214,11 +214,11 @@ function Landing() {
         {/* Hero */}
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center mt-10">
 
-          <h2 className="text-4xl sm:text-6xl font-extrabold leading-[1.15] mb-8 pb-2">
+          <h2 className="font-display text-4xl sm:text-6xl font-extrabold leading-[1.15] mb-8 pb-2">
             Build Your
             <span className="
                 block
-                pb-5
+                pb-3
                 bg-gradient-to-r
                 from-purple-400 via-green-400 to-purple-400
                 bg-clip-text text-transparent
@@ -308,7 +308,7 @@ function Landing() {
         </div>
 
         {/* Footer */}
-        <div className="py-10 text-center text-gray-500 text-sm border-t border-gray-800">
+        <div className="py-10 text-center text-gray-500 text-sm border-t border-gray-900">
           Built for engineers who think deeply.
         </div>
 
@@ -329,6 +329,7 @@ function FeatureCard({ icon, title, description }) {
       hover:shadow-xl
       hover:shadow-purple-500/10
       transition
+      
     ">
       <div className="text-3xl mb-4">{icon}</div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
