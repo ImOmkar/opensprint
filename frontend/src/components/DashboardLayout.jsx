@@ -7,7 +7,7 @@ function DashboardLayout({ user, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-black text-white flex overflow-x-hidden">
+    <div className="h-screen bg-black text-white flex overflow-hidden">
 
       {/* Desktop sidebar */}
       <div className="hidden md:block">
@@ -23,7 +23,7 @@ function DashboardLayout({ user, children }) {
             onClick={() => setSidebarOpen(false)}
           />
 
-          <div className="relative z-50">
+          <div className="relative z-50 h-full">
             <Sidebar
               user={user}
               mobile
@@ -35,14 +35,14 @@ function DashboardLayout({ user, children }) {
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full">
 
         <Topbar
           user={user}
           onMenuClick={() => setSidebarOpen(true)}
         />
 
-        <main className="min-w-0">
+        <main className="flex-1 overflow-y-auto min-w-0 scroll-smooth">
           {children}
         </main>
 

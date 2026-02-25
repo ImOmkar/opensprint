@@ -12,4 +12,7 @@ export const userService = {
   getPublicSprint: (username, sprintId) =>
     api.get(`/users/${username}/${sprintId}`),
 
+  getPublicActivity: (username) =>
+    api.get(`/users/${username}/activity`),
 }
+

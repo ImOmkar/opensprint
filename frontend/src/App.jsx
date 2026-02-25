@@ -7,6 +7,7 @@ import PublicSprint from "./pages/PublicSprint"
 import PublicProfile from "./pages/PublicProfile"
 import DivePage from "./pages/DivePage"
 import GraphPage from "./pages/GraphPage"
+import KnowledgeTimeline from "./pages/KnowledgeTimeline"
 
 
 function App() {
@@ -22,6 +23,8 @@ function App() {
 
       <Route path="/u/:username" element={<PublicProfile />} />
       <Route path="/u/:username/:sprintId" element={<PublicSprint />} />
+
+      <Route path="/timeline" element={<KnowledgeTimeline />} />
 
     
     </Routes>

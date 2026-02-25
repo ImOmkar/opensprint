@@ -116,6 +116,12 @@ function Sidebar({ user, mobile = false, onClose }) {
               onClick={() => go(`/u/${user.username}`)}
             />
 
+            <NavItem
+              label="Knowledge Timeline"
+              active={location.pathname === "/timeline"}
+              onClick={() => go("/timeline")}
+            />
+
           </nav>
 
         </div>

@@ -232,7 +232,6 @@ async def get_versions(
     return versions
 
 
-
 @router.post("/{dive_id}/restore/{version_id}")
 async def restore_version(
     dive_id: str,
