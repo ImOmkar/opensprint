@@ -1,6 +1,8 @@
+import { useState } from "react"
 import Sidebar from "./Sidebar"
 import Topbar from "./Topbar"
-import { useState } from "react"
+import { Toaster } from "react-hot-toast"
+
 
 function DashboardLayout({ user, children }) {
 
@@ -8,6 +10,30 @@ function DashboardLayout({ user, children }) {
 
   return (
     <div className="h-screen bg-black text-white flex overflow-hidden">
+      
+      {/* toast component */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#111827",
+            color: "#fff",
+            border: "1px solid #374151",
+          },
+          success: {
+            iconTheme: {
+              primary: "#22c55e",
+              secondary: "#111827",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#111827",
+            },
+          },
+        }}
+      />
 
       {/* Desktop sidebar */}
       <div className="hidden md:block">

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-// import { api } from "../api/client"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
 import { sprintService } from "../services/sprintService"
 import { userService } from "../services/userService"
@@ -13,6 +12,7 @@ import StatGrid from "../components/StatGrid"
 import SprintGrid from "../components/SprintGrid"
 import SprintModal from "../components/SprintModal"
 import ActivityHeatmap from "../components/ActivityHeatmap"
+import toast from "react-hot-toast"
 
 function Dashboard() {
   const [user, setUser] = useState(null)
@@ -24,31 +24,24 @@ function Dashboard() {
   const [deleteSprintId, setDeleteSprintId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [description, setDescription] = useState("")
-
   const [globalTagCounts, setGlobalTagCounts] = useState({})
-
   const [stats, setStats] = useState({
     active: 0,
     completed: 0,
     dives: 0
   })
-
   const [selectedGlobalTag, setSelectedGlobalTag] = useState(null)
   const [filteredDives, setFilteredDives] = useState([])
   const [loadingTagFilter, setLoadingTagFilter] = useState(false)
-
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
-
   const [isSprintModalOpen, setIsSprintModalOpen] = useState(false)
 
   useEffect(() => {
     userService.getMe()
       .then(async data => {
         setUser(data)
-
-        // Run all loaders in parallel
         await Promise.all([
           loadSprints(),
           loadStats(),
@@ -75,7 +68,6 @@ function Dashboard() {
     }))
   }
 
-
   const loadStats = async () => {
     const data = await userService.getMyStats()
 
@@ -97,13 +89,18 @@ function Dashboard() {
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     }
 
-    await sprintService.create(body)
-    loadStats()
+    try{
+      await sprintService.create(body)
+      toast.success("Sprint created successfully")
+      loadStats()
+      setTitle("")
+      setGoal("")
+      setDescription("")
+      loadSprints()
+    } catch (err){
+      toast.error("Failed to create a new sprint")
+    }
 
-    setTitle("")
-    setGoal("")
-    setDescription("")
-    loadSprints()
   }
 
   const handleUpdateSprint = async (e) => {
@@ -117,14 +114,17 @@ function Dashboard() {
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     }
 
-    await sprintService.update(editingId, body)
-    loadStats()
-
-
-    setEditingId(null)
-    setTitle("")
-    setGoal("")
-    loadSprints()
+    try{
+      await sprintService.update(editingId, body)
+      toast.success("Sprint updated successfully")
+      loadStats()
+      setEditingId(null)
+      setTitle("")
+      setGoal("")
+      loadSprints()
+    } catch (err) {
+      toast.error("Failed to update a sprint")
+    }
   }
 
   const handleEditSprint = (sprint) => {
@@ -139,18 +139,25 @@ function Dashboard() {
 
     if (!deleteSprintId) return
 
-    await sprintService.delete(deleteSprintId)
-
-    setDeleteSprintId(null)
-
-    loadSprints()
-    loadStats()
+    try{
+      await sprintService.delete(deleteSprintId)
+      toast.success("Sprint deleted successfully")
+      setDeleteSprintId(null)
+      loadSprints()
+      loadStats()
+    } catch (err) {
+      toast.error("Failed to delete a Sprint")
+    }
   }
 
   const handleToggleSprint = async (id) => {
-    await sprintService.toggle(id)
-
-    loadSprints()
+    try{
+      await sprintService.toggle(id)
+      toast.success("Sprint status changed")
+      loadSprints()
+    } catch (err) {
+      toast.error("Failed to change a sprint status")
+    }
   }
 
   const loadGlobalTags = async () => {
@@ -175,6 +182,7 @@ function Dashboard() {
 
     } catch (err) {
       console.error(err)
+      toast.error(err || "Failed to load global tags")
     }
   }
 
@@ -207,6 +215,7 @@ function Dashboard() {
 
     } catch (err) {
       console.error(err)
+      toast.error(err || "Failure")
     }
 
     setLoadingTagFilter(false)
@@ -257,6 +266,7 @@ function Dashboard() {
 
     } catch (err) {
       console.error(err)
+      toast.error(err || "Failed to search")
     }
 
     setSearching(false)

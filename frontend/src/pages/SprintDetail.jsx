@@ -19,6 +19,8 @@ import TagInput from "../components/TagInput"
 import DashboardLayout from "../components/DashboardLayout"
 import DraftList from "../components/DraftList"
 import { aiService } from "../services/aiService"
+import toast from "react-hot-toast"
+
 
 function Section({ title, content }) {
 
@@ -108,13 +110,15 @@ function SprintDetail() {
   const handleGenerateSummary = async () => {
     setSummaryOpen(true)
     setLoadingSummary(true)
-  
-    const summary = await aiService.generateSummary(id)
-  
-    setAiSummary(summary)
-    setLoadingSummary(false)
+    try{
+      const summary = await aiService.generateSummary(id)
+      toast.success("Summary is read")
+      setAiSummary(summary)
+      setLoadingSummary(false)
+    } catch (err) {
+      toast.error("Failed to generate summary")
+    }
   }
-
 
   const handleModalClose = () => {
     if (isSubmitting) {
@@ -231,7 +235,6 @@ function SprintDetail() {
       .catch(() => navigate("/"))
   }
 
-
   const handleCreateDive = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -250,26 +253,26 @@ function SprintDetail() {
       tags: tags
     }
 
-    const newDive = await deepDiveService.create(body)
-
-    await draftService.delete(id)
-    setDraftVersion(prev => prev + 1)
-
-    setExpandedDiveIds(prev => new Set([...prev, newDive._id]))
-
-    setDives(prev => [newDive, ...prev])
-
-    setSelectedDiveId(newDive._id)   // immediate UI update
-
-    setTitle("")
-    setProblem("")
-    setHypothesis("")
-    setTests("")
-    setConclusion("")
-    setTags([])
-    resetForm()
-    setIsSubmitting(false)
-    setIsDiveModalOpen(false)
+    try{
+      const newDive = await deepDiveService.create(body)
+      await draftService.delete(id)
+      setDraftVersion(prev => prev + 1)
+      setExpandedDiveIds(prev => new Set([...prev, newDive._id]))
+      setDives(prev => [newDive, ...prev])
+      setSelectedDiveId(newDive._id)   // immediate UI update
+      setTitle("")
+      setProblem("")
+      setHypothesis("")
+      setTests("")
+      setConclusion("")
+      setTags([])
+      resetForm()
+      setIsSubmitting(false)
+      setIsDiveModalOpen(false)
+      toast.error("A new dive created successfully")
+    } catch (err) {
+      toast.error("Failed to create a new dive")
+    }
   }
 
   const confirmDeleteDive = async () => {
