@@ -20,6 +20,7 @@ import DashboardLayout from "../components/DashboardLayout"
 import DraftList from "../components/DraftList"
 import { aiService } from "../services/aiService"
 import toast from "react-hot-toast"
+import ShareModal from "../components/ShareModal"
 
 
 function Section({ title, content }) {
@@ -82,6 +83,8 @@ function SprintDetail() {
 
   const [draftVersion, setDraftVersion] = useState(0)
 
+  const [shareOpen, setShareOpen] = useState(false)
+
   const tagCounts = dives.reduce((acc, dive) => {
     if (!dive.tags) return acc
 
@@ -100,19 +103,18 @@ function SprintDetail() {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [loadingSummary, setLoadingSummary] = useState(false)
 
- 
 
   const hasDraftContent =
     !!title || !!problem || !!hypothesis || !!tests || !!conclusion || tags.length > 0
 
   const [showDraftNotice, setShowDraftNotice] = useState(false)
-  
+
   const handleGenerateSummary = async () => {
     setSummaryOpen(true)
     setLoadingSummary(true)
-    try{
+    try {
       const summary = await aiService.generateSummary(id)
-      toast.success("Summary is read")
+      toast.success("Summary is ready")
       setAiSummary(summary)
       setLoadingSummary(false)
     } catch (err) {
@@ -253,7 +255,7 @@ function SprintDetail() {
       tags: tags
     }
 
-    try{
+    try {
       const newDive = await deepDiveService.create(body)
       await draftService.delete(id)
       setDraftVersion(prev => prev + 1)
@@ -269,22 +271,26 @@ function SprintDetail() {
       resetForm()
       setIsSubmitting(false)
       setIsDiveModalOpen(false)
-      toast.error("A new dive created successfully")
+      toast.success("A new dive created successfully")
     } catch (err) {
       toast.error("Failed to create a new dive")
     }
   }
 
   const confirmDeleteDive = async () => {
+    try {
+      await deepDiveService.delete(deleteDiveId)
 
-    await deepDiveService.delete(deleteDiveId)
+      setDives(prev => prev.filter(d => d._id !== deleteDiveId))
 
-    setDives(prev => prev.filter(d => d._id !== deleteDiveId))
+      if (selectedDiveId === deleteDiveId)
+        setSelectedDiveId(null)
 
-    if (selectedDiveId === deleteDiveId)
-      setSelectedDiveId(null)
-
-    setDeleteDiveId(null)
+      setDeleteDiveId(null)
+      toast.success("Dive deleted successfully")
+    } catch (err) {
+      toast.error("Failed to delete a dive")
+    }
   }
 
   const handleEditDive = (dive) => {
@@ -317,31 +323,37 @@ function SprintDetail() {
       tags: tags
     }
 
-    await deepDiveService.update(editingDiveId, body)
+    try {
+      await deepDiveService.update(editingDiveId, body)
 
-    // update locally using existing dive
-    setDives(prev =>
-      prev.map(d =>
-        d._id === editingDiveId
-          ? { ...d, ...body }
-          : d
+      // update locally using existing dive
+      setDives(prev =>
+        prev.map(d =>
+          d._id === editingDiveId
+            ? { ...d, ...body }
+            : d
+        )
       )
-    )
 
-    setExpandedDiveIds(prev => new Set([...prev, editingDiveId]))
+      setExpandedDiveIds(prev => new Set([...prev, editingDiveId]))
 
-    await draftService.delete(id)
+      await draftService.delete(id)
 
-    setEditingDiveId(null)
+      setEditingDiveId(null)
 
-    setTitle("")
-    setProblem("")
-    setHypothesis("")
-    setTests("")
-    setConclusion("")
-    setTags([])
-    setIsSubmitting(false)
-    setIsDiveModalOpen(false)
+      setTitle("")
+      setProblem("")
+      setHypothesis("")
+      setTests("")
+      setConclusion("")
+      setTags([])
+      setIsSubmitting(false)
+      setIsDiveModalOpen(false)
+
+      toast.success("Dive updated successfully")
+    } catch (err) {
+      toast.error("Failed to update a dive")
+    }
   }
 
   const handleCopyLink = () => {
@@ -351,7 +363,8 @@ function SprintDetail() {
 
     navigator.clipboard.writeText(link)
 
-    alert("Public link copied")
+    // alert("Public link copied")
+    toast.success("Public link copied")
   }
 
   const toggleDive = (id) => {
@@ -510,7 +523,7 @@ function SprintDetail() {
                       resetForm()
                       setIsDiveModalOpen(true)
                     }}
-                    className="text-green-400 text-sm hover:text-green-300"
+                    className="text-green-400 text-sm hover:text-green-300 hover:underline hover:underline-offset-4"
                   >
                     + New
                   </button>
@@ -529,13 +542,27 @@ function SprintDetail() {
                     ${selectedDiveId === dive._id ? "bg-gray-800" : ""}`}
                   >
 
-                    <p className="text-green-400 text-sm font-medium">
-                      {dive.title}
-                    </p>
+                    <div className="flex items-center justify-between">
 
-                    <p className="text-xs text-gray-500">
-                      {formatRelativeTime(dive.created_at)}
-                    </p>
+                      <div>
+                        <p className="text-green-400 text-sm font-medium">
+                          {dive.title}
+                        </p>
+
+                        <p className="text-xs text-gray-500">
+                          {formatRelativeTime(dive.created_at)}
+                        </p>
+                      </div>
+
+                      <div>
+                        <button
+                          onClick={() => setShareOpen(true)}
+                          className="text-purple-400 hover:text-purple-300 text-sm hover:underline hover:underline-offset-4"
+                        >
+                          Share
+                        </button>
+                      </div>
+                    </div>
 
                   </button>
 
@@ -749,6 +776,16 @@ function SprintDetail() {
         </div>
       )}
 
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        title={selectedDive?.title}
+        problem={selectedDive?.problem}
+        username={user?.username}
+        streak={0}
+        publicUrl={`${window.location.origin}/u/${user?.username}/${id}`}
+      />
+
       {/* </div> */}
     </DashboardLayout>
   )
@@ -789,37 +826,37 @@ function DeepDiveModal({
       ${tests}
       ${conclusion}
     `
-  
+
     if (!combined.trim()) return
-  
+
     setSuggestingTags(true)
-  
+
     try {
       const newTags = await aiService.suggestTags(combined)
-  
+
       const merged = Array.from(new Set([...tags, ...newTags]))
       setTags(merged)
-  
+
     } catch (err) {
       console.error(err)
     }
-  
+
     setSuggestingTags(false)
   }
 
 
   const handleImprove = async (fieldName, value, setter) => {
     if (!value?.trim()) return
-  
+
     setImprovingField(fieldName)
-  
+
     try {
       const improved = await aiService.improve(value, fieldName)
       setter(improved)
     } catch (err) {
       console.error(err)
     }
-  
+
     setImprovingField(null)
   }
 

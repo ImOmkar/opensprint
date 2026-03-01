@@ -43,7 +43,7 @@ function PublicSprint() {
   return (
     <PublicLayout>
 
-      <div className="flex items-center gap-4 mb-10">
+      {/* <div className="flex items-center gap-4 mb-10">
         <img
           src={data.user.avatar_url}
           alt="avatar"
@@ -52,6 +52,59 @@ function PublicSprint() {
         <h2 className="text-2xl font-bold text-green-400">
           {data.user.username}
         </h2>
+      </div> */}
+
+      {/* Profile Header */}
+      <div className="
+        flex items-center gap-5
+        mb-10
+        bg-gray-900/60
+        border border-gray-800
+        rounded-xl
+        p-5
+      ">
+
+        {/* Avatar */}
+        <div className="p-[2px] rounded-full bg-gradient-to-br from-green-500/40 to-purple-500/40">
+          <img
+            src={data.user.avatar_url}
+            alt="avatar"
+            className="w-16 h-16 rounded-full bg-gray-800 border border-gray-700"
+          />
+        </div>
+
+        {/* Info */}
+        <div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+
+            <h2 className="text-2xl font-bold text-white">
+              {data.user.username}
+            </h2>
+{/* 
+            {stats?.current_streak > 0 && (
+              <div className="
+                flex items-center gap-1
+                text-xs
+                bg-orange-500/15
+                border border-orange-500/40
+                text-orange-400
+                px-3 py-1
+                rounded-full
+                font-medium
+              ">
+                🔥 {stats.current_streak} day streak
+              </div>
+            )} */}
+
+          </div>
+
+          <p className="text-sm text-gray-400 mt-1">
+            Learning in public
+          </p>
+
+        </div>
+
       </div>
 
       <div className="mb-10">
