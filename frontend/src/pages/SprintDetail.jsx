@@ -22,6 +22,9 @@ import { aiService } from "../services/aiService"
 import toast from "react-hot-toast"
 import ShareModal from "../components/ShareModal"
 
+import html2canvas from "html2canvas"
+import jsPDF from "jspdf"
+import SprintReport from "../components/SprintReport"
 
 function Section({ title, content }) {
 
@@ -103,11 +106,32 @@ function SprintDetail() {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [loadingSummary, setLoadingSummary] = useState(false)
 
-
   const hasDraftContent =
     !!title || !!problem || !!hypothesis || !!tests || !!conclusion || tags.length > 0
 
   const [showDraftNotice, setShowDraftNotice] = useState(false)
+
+  const handleDownloadReport = async () => {
+
+    const element = document.getElementById("sprint-report")
+    if (!element) return
+  
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true
+    })
+  
+    const imgData = canvas.toDataURL("image/png")
+  
+    const pdf = new jsPDF("p", "mm", "a4")
+  
+    const imgWidth = 210
+    const pageHeight = 297
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
+  
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight)
+    pdf.save(`${sprint.title}-report.pdf`)
+  }
 
   const handleGenerateSummary = async () => {
     setSummaryOpen(true)
@@ -431,19 +455,26 @@ function SprintDetail() {
                 {sprint.goal}
               </p>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch gap-2">
                 <button
                   onClick={handleCopyLink}
-                  className="w-full px-4 py-2 bg-green-600 hover:bg-green-500 text-black rounded-lg text-sm"
+                  className="w-full sm:flex-1 px-4 py-2 bg-green-600 hover:bg-green-500 text-black rounded-lg text-sm"
                 >
                   Copy Public Link
                 </button>
 
                 <button
                   onClick={handleGenerateSummary}
-                  className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm"
+                  className="w-full sm:flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm"
                 >
-                  {loadingSummary ? "Generating..." : "✨ Generate AI Summary"}
+                  {loadingSummary ? "Generating..." : "✨ AI Summary"}
+                </button>
+
+                <button
+                  onClick={handleDownloadReport}
+                  className="w-full sm:basis-full px-4 py-2 bg-white text-black rounded-lg text-sm hover:bg-gray-200"
+                >
+                  Download Report
                 </button>
               </div>
 
@@ -785,6 +816,16 @@ function SprintDetail() {
         streak={0}
         publicUrl={`${window.location.origin}/u/${user?.username}/${id}`}
       />
+
+      <div style={{
+        position: "fixed",
+        top: "-9999px",
+        left: "-9999pdx"
+      }}>
+        <SprintReport
+          sprint={sprint} dives={dives} username={user?.username} streak={0}>
+        </SprintReport>
+      </div>
 
       {/* </div> */}
     </DashboardLayout>
