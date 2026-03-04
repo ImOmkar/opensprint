@@ -1,6 +1,10 @@
 import React, { useRef, useState } from "react"
 import * as htmlToImage from "html-to-image"
 
+function stripWikiLinks(text = "") {
+  return text.replace(/\[\[(.*?)\]\]/g, "$1")
+}
+
 function ShareCard({
     title,
     problem,
@@ -96,7 +100,7 @@ function ShareCard({
               </h1>
 
               <p className="text-sm sm:text-lg  line-clamp-4">
-                {problem}
+                {stripWikiLinks(problem)}
               </p>
             </div>
 

@@ -2,58 +2,42 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useState } from "react"
 import { authService } from "../services/authService"
 import ConfirmModal from "./ConfirmModal"
+import { useAuth } from "../context/AuthContext"
+import toast from "react-hot-toast"
 
 function Sidebar({ user, mobile = false, onClose }) {
-
+  const { refreshUser } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
-
   const handleLogoutClick = () => {
-
     setShowLogoutConfirm(true)
-
   }
-
 
   const confirmLogout = async () => {
-
     try {
-
       await authService.logout()
-
+      await refreshUser()
       navigate("/")
-
+      toast.success("Logged out successfully")
     } catch (err) {
-
       console.error(err)
-
       navigate("/")
-
     } finally {
-
       setShowLogoutConfirm(false)
-
     }
-
   }
 
-
   const go = (path) => {
-
     navigate(path)
 
     if (mobile && onClose) onClose()
-
   }
 
-
   return (
-
     <>
-
       <aside
         className={`
           ${mobile ? "flex" : "hidden md:flex"}
@@ -66,22 +50,12 @@ function Sidebar({ user, mobile = false, onClose }) {
           p-4
         `}
       >
-
         <div>
-
-          {/* Profile */}
           <div className="flex items-center gap-3 mb-6">
-
-            <img
-              src={user?.avatar_url}
-              className="w-10 h-10 rounded-full"
-            />
+            <img src={user?.avatar_url} className="w-10 h-10 rounded-full" />
 
             <div>
-
-              <p className="font-semibold text-white">
-                {user?.username}
-              </p>
+              <p className="font-semibold text-white">{user?.username}</p>
 
               <button
                 onClick={() => go(`/u/${user?.username}`)}
@@ -89,15 +63,10 @@ function Sidebar({ user, mobile = false, onClose }) {
               >
                 Public Profile
               </button>
-
             </div>
-
           </div>
 
-
-          {/* Navigation */}
           <nav className="space-y-1">
-
             <NavItem
               label="Dashboard"
               active={location.pathname === "/dashboard"}
@@ -121,13 +90,9 @@ function Sidebar({ user, mobile = false, onClose }) {
               active={location.pathname === "/timeline"}
               onClick={() => go("/timeline")}
             />
-
           </nav>
-
         </div>
 
-
-        {/* Logout */}
         <button
           onClick={handleLogoutClick}
           className="
@@ -141,11 +106,8 @@ function Sidebar({ user, mobile = false, onClose }) {
         >
           Logout
         </button>
-
       </aside>
 
-
-      {/* Logout Confirmation Modal */}
       <ConfirmModal
         isOpen={showLogoutConfirm}
         title="Confirm Logout"
@@ -155,18 +117,12 @@ function Sidebar({ user, mobile = false, onClose }) {
         onConfirm={confirmLogout}
         onCancel={() => setShowLogoutConfirm(false)}
       />
-
     </>
-
   )
-
 }
 
-
 function NavItem({ label, active, onClick }) {
-
   return (
-
     <button
       onClick={onClick}
       className={`
@@ -175,17 +131,16 @@ function NavItem({ label, active, onClick }) {
         px-3 py-2
         rounded-lg
         transition
-        ${active
-          ? "bg-gray-800 text-white"
-          : "text-gray-300 hover:bg-gray-800 hover:text-white"
+        ${
+          active
+            ? "bg-gray-800 text-white"
+            : "text-gray-300 hover:bg-gray-800 hover:text-white"
         }
       `}
     >
       {label}
     </button>
-
   )
-
 }
 
 export default Sidebar

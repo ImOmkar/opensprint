@@ -1,186 +1,26 @@
-// import { useEffect } from "react"
-
-// function Landing() {
-
-//   const handleLogin = () => {
-//     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/github/login`
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-
-//       {/* Background Glow */}
-//       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-green-900/20 blur-3xl opacity-60" />
-
-//       <div className="relative z-10 flex flex-col min-h-screen">
-
-//         {/* Navbar */}
-//         <div className="flex justify-between items-center px-6 py-5 max-w-6xl mx-auto w-full">
-
-//           <h1 className="text-xl font-bold text-green-400">
-//             OpenSprint
-//           </h1>
-
-//           <button
-//             onClick={handleLogin}
-//             className="hidden sm:block bg-green-500 hover:bg-green-400 text-black px-4 py-2 rounded-lg text-sm font-semibold transition"
-//           >
-//             Login
-//           </button>
-
-//         </div>
-
-//         {/* Hero Section */}
-//         <div className="flex-1 flex items-center justify-center px-6 py-6">
-
-//           <div className="max-w-4xl text-center">
-
-//             <h2 className="text-4xl sm:text-6xl font-extrabold leading-tight mb-6">
-
-//               Your Engineering  
-//               <span className="bg-gradient-to-r from-purple-400 to-green-400 bg-clip-text text-transparent">
-//                 {" "}Knowledge System
-//               </span>
-
-//             </h2>
-
-//             <p className="text-gray-400 text-lg sm:text-xl mb-8 max-w-2xl mx-auto">
-//               Capture deep technical thinking.  
-//               Track insights.  
-//               Build streaks.  
-//               Improve writing with AI.
-//             </p>
-
-//             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-
-//               <button
-//                 onClick={handleLogin}
-//                 className="
-//                   bg-green-500 hover:bg-green-400
-//                   text-black
-//                   px-8 py-4
-//                   rounded-xl
-//                   font-semibold
-//                   text-lg
-//                   shadow-lg shadow-green-500/20
-//                   transition
-//                 "
-//               >
-//                 🚀 Start with GitHub
-//               </button>
-
-//               <a
-//                 href="#features"
-//                 className="
-//                   border border-gray-700
-//                   px-8 py-4
-//                   rounded-xl
-//                   text-lg
-//                   hover:border-gray-500
-//                   transition
-//                 "
-//               >
-//                 Explore Features
-//               </a>
-
-//             </div>
-
-//           </div>
-
-//         </div>
-
-//         {/* Features Section */}
-//         <div id="features" className="py-20 px-6">
-
-//           <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-
-//             <FeatureCard
-//               icon="🧠"
-//               title="Deep Thinking"
-//               description="Structured problem → hypothesis → tests → conclusion workflow."
-//             />
-
-//             <FeatureCard
-//               icon="✨"
-//               title="AI Writing Assistant"
-//               description="Improve clarity, fix grammar, generate tags and summaries."
-//             />
-
-//             <FeatureCard
-//               icon="🔥"
-//               title="Knowledge Streaks"
-//               description="Build daily engineering habits with activity tracking."
-//             />
-
-//             <FeatureCard
-//               icon="🔗"
-//               title="Backlinks"
-//               description="Connect related deep dives automatically."
-//             />
-
-//             <FeatureCard
-//               icon="📊"
-//               title="Sprint Summaries"
-//               description="AI-generated sprint insights and progress reports."
-//             />
-
-//             <FeatureCard
-//               icon="🏷"
-//               title="Smart Tags"
-//               description="Auto-suggest tags from your technical content."
-//             />
-
-//           </div>
-
-//         </div>
-
-//         {/* Footer */}
-//         <div className="py-10 text-center text-gray-500 text-sm border-t border-gray-800">
-//           Built for engineers who think deeply.
-//         </div>
-
-//       </div>
-
-//     </div>
-//   )
-// }
-
-// function FeatureCard({ icon, title, description }) {
-//   return (
-//     <div className="
-//       bg-gray-900/60
-//       border border-gray-800
-//       backdrop-blur
-//       rounded-2xl
-//       p-6
-//       hover:border-purple-500/40
-//       hover:shadow-xl
-//       hover:shadow-purple-500/10
-//       transition
-//     ">
-
-//       <div className="text-3xl mb-4">
-//         {icon}
-//       </div>
-
-//       <h3 className="text-lg font-semibold mb-2 text-white">
-//         {title}
-//       </h3>
-
-//       <p className="text-gray-400 text-sm">
-//         {description}
-//       </p>
-
-//     </div>
-//   )
-// }
-
-// export default Landing
-
-
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { userService } from "../services/userService"
+import { useAuth } from "../context/AuthContext"
 
 function Landing() {
+
+  const { isAuthenticated, loading } = useAuth() 
+  const navigate = useNavigate()
+
+  // useEffect(() => {
+  //   userService.getMe()
+  //     .then(() => {
+  //       navigate("/dashboard", { replace: true })
+  //     })
+  //     .catch(() => {})
+  // }, [])
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/dashboard", { replace: true })
+    }
+  }, [loading, isAuthenticated])
 
   const handleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/github/login`

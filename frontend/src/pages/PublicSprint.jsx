@@ -9,19 +9,38 @@ import LinkedMarkdown from "../components/LinkedMarkdown"
 
 function PublicSprint() {
   const { username, sprintId } = useParams()
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
 
+  // useEffect(() => {
+  //   userService.getPublicSprint(username, sprintId)
+  //     .then(data => {
+  //       setData(data)
+  //       setLoading(false)
+  //     })
+  //     .catch(() => {
+  //       setData(null)
+  //       setLoading(false)
+  //     })
+  // }, [username, sprintId])
+
   useEffect(() => {
-    userService.getPublicSprint(username, sprintId)
-      .then(data => {
-        setData(data)
+
+    Promise.all([
+      userService.getPublicSprint(username, sprintId),
+      userService.getPublicActivity(username)
+    ])
+      .then(([profile, activity]) => {
+        setData(profile)
+        setStats(activity)
         setLoading(false)
       })
       .catch(() => {
-        setData(null)
         setLoading(false)
+        setData(null)
       })
+
   }, [username, sprintId])
 
 
@@ -82,6 +101,21 @@ function PublicSprint() {
             <h2 className="text-2xl font-bold text-white">
               {data.user.username}
             </h2>
+
+            {stats?.current_streak > 0 && (
+              <div className="
+                flex items-center gap-1
+                text-xs
+                bg-orange-500/15
+                border border-orange-500/40
+                text-orange-400
+                px-3 py-1
+                rounded-full
+                font-medium
+              ">
+                🔥 {stats.current_streak} day streak
+              </div>
+            )}
 
           </div>
 
