@@ -5,6 +5,7 @@ import { userService } from "../services/userService"
 import { formatExactTime, formatRelativeTime } from "../utils/time"
 import Spinner from "../components/Spinner"
 import PublicLayout from "../components/PublicLayout"
+import LinkedMarkdown from "../components/LinkedMarkdown"
 
 function PublicSprint() {
   const { username, sprintId } = useParams()
@@ -81,21 +82,6 @@ function PublicSprint() {
             <h2 className="text-2xl font-bold text-white">
               {data.user.username}
             </h2>
-{/* 
-            {stats?.current_streak > 0 && (
-              <div className="
-                flex items-center gap-1
-                text-xs
-                bg-orange-500/15
-                border border-orange-500/40
-                text-orange-400
-                px-3 py-1
-                rounded-full
-                font-medium
-              ">
-                🔥 {stats.current_streak} day streak
-              </div>
-            )} */}
 
           </div>
 
@@ -150,17 +136,79 @@ function PublicSprint() {
         {data.deep_dives.map(dive => (
           <div
             key={dive._id}
-            className="bg-gray-900 p-6 rounded-xl border border-gray-800"
+            id={dive._id}
+            className="bg-gray-900 p-6 rounded-xl border border-gray-800 hover:border-purple-500 transition"
           >
             <h3 className="text-xl font-bold text-green-400 mb-3">
               {dive.title}
             </h3>
 
-            <div className="space-y-2 text-gray-300">
-              <p><strong>Problem:</strong> {dive.problem}</p>
-              <p><strong>Hypothesis:</strong> {dive.hypothesis}</p>
-              <p><strong>Tests:</strong> {dive.tests}</p>
-              <p><strong>Conclusion:</strong> {dive.conclusion}</p>
+            <div id={dive._id} className="space-y-6">
+
+              {dive.problem && (
+                <div>
+                  <h4 className="text-sm text-gray-400 font-semibold mb-2">
+                    Problem
+                  </h4>
+                  <div className="prose prose-invert max-w-none text-sm bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <LinkedMarkdown 
+                      content={dive.problem} 
+                      mode="public"
+                      username={data.user.username}
+                      sprintId={data.sprint._id}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {dive.hypothesis && (
+                <div>
+                  <h4 className="text-sm text-gray-400 font-semibold mb-2">
+                    Hypothesis
+                  </h4>
+                  <div className="prose prose-invert max-w-none text-sm bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <LinkedMarkdown 
+                      content={dive.hypothesis} 
+                      mode="public"
+                      username={data.user.username}
+                      sprintId={data.sprint._id}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {dive.tests && (
+                <div>
+                  <h4 className="text-sm text-gray-400 font-semibold mb-2">
+                    Tests
+                  </h4>
+                  <div className="prose prose-invert max-w-none text-sm bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <LinkedMarkdown 
+                      content={dive.tests} 
+                      mode="public"
+                      username={data.user.username}
+                      sprintId={data.sprint._id}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {dive.conclusion && (
+                <div>
+                  <h4 className="text-sm text-gray-400 font-semibold mb-2">
+                    Conclusion
+                  </h4>
+                  <div className="prose prose-invert max-w-none text-sm bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <LinkedMarkdown 
+                      content={dive.conclusion} 
+                      mode="public"
+                      username={data.user.username}
+                      sprintId={data.sprint._id}
+                    />
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         ))}

@@ -8,74 +8,52 @@ import { userService } from "../services/userService"
 function GraphPage() {
 
   const navigate = useNavigate()
-
   const fgRef = useRef()
   const containerRef = useRef()
 
   const [user, setUser] = useState(null)
   const [data, setData] = useState(null)
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
 
-  const [dimensions, setDimensions] = useState({
-    width: 800,
-    height: 600
-  })
-
-
-  // Fetch data
+  // Fetch
   useEffect(() => {
-
-    api.get("/deep-dives/graph")
-      .then(setData)
-
-    userService.getMe()
-      .then(setUser)
-      .catch(() => navigate("/"))
-
+    api.get("/deep-dives/graph").then(setData)
+    userService.getMe().then(setUser).catch(() => navigate("/"))
   }, [])
 
-
-  // Responsive sizing
+  // Responsive sizing (FULL HEIGHT FIX)
   useEffect(() => {
+    if (!data || !user || !containerRef.current) return
 
-    const updateSize = () => {
-
+    const resize = () => {
       if (!containerRef.current) return
 
-      const rect = containerRef.current.getBoundingClientRect()
+      const { width, height } = containerRef.current.getBoundingClientRect()
 
       setDimensions({
-        width: rect.width,
-        height: window.innerHeight - rect.top - 20
+        width,
+        height
       })
     }
 
-    updateSize()
+    resize()
 
-    window.addEventListener("resize", updateSize)
+    const observer = new ResizeObserver(resize)
+    observer.observe(containerRef.current)
 
-    return () => window.removeEventListener("resize", updateSize)
+    return () => observer.disconnect()
+  }, [data, user])
 
-  }, [])
-
-
-  // Auto fit graph
+  // Auto fit
   useEffect(() => {
-
     if (fgRef.current && data) {
-
       setTimeout(() => {
-
-        fgRef.current.zoomToFit(400, 50)
-
-      }, 500)
-
+        fgRef.current.zoomToFit(400, 80)
+      }, 600)
     }
-
   }, [data])
 
-
   if (!data || !user) {
-
     return (
       <DashboardLayout user={user}>
         <div className="text-gray-400 p-6">
@@ -85,149 +63,109 @@ function GraphPage() {
     )
   }
 
-
   return (
-
     <DashboardLayout user={user}>
 
-      {/* Page header */}
-      <div className="mb-4 px-4 sm:px-4">
+      {/* Full screen wrapper */}
+      <div className="flex flex-col h-[calc(100vh-64px)]">
 
-        <h1 className="text-xl font-semibold text-white mt-2">
-          Knowledge Graph
-        </h1>
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-gray-800 bg-black/60 backdrop-blur flex justify-between items-center">
 
-        <p className="text-sm text-gray-500">
-          Visual map of your engineering knowledge
-        </p>
+          <div>
+            <h1 className="text-xl font-semibold text-white">
+              Knowledge Graph
+            </h1>
+            <p className="text-sm text-gray-500">
+              Visual map of your engineering brain
+            </p>
+          </div>
 
-      </div>
+          <div className="text-xs text-gray-400 hidden sm:block">
+            Nodes: {data.nodes.length} • Links: {data.links.length}
+          </div>
 
+        </div>
 
-      {/* Graph container */}
-      <div
-        ref={containerRef}
-        className="
-          w-full
-          border-t border-gray-800
-          relative
-        "
-      >
-
-        <ForceGraph2D
-
-          ref={fgRef}
-
-          width={dimensions.width}
-          height={dimensions.height}
-
-          graphData={data}
-
-          backgroundColor="#000000"
-
-          cooldownTicks={100}
-
-          nodeRelSize={6}
-
-          linkColor={() => "#8b5cf6"}
-
-          linkWidth={1.5}
-
-          nodeColor={() => "#22c55e"}
-
-          nodeLabel="name"
-
-
-          // Navigation
-          onNodeClick={(node) => navigate(`/dive/${node.id}`)}
-
-          onNodeHover={(node) => {
-            document.body.style.cursor =
-              node ? "pointer" : "default"
-          }}
-
-
-          // Custom node rendering
-          nodeCanvasObject={(node, ctx, globalScale) => {
-
-            const label = node.name
-
-            const fontSize = 14 / globalScale
-
-            ctx.font = `${fontSize}px Sans-Serif`
-
-            ctx.fillStyle = "#22c55e"
-
-            ctx.beginPath()
-            ctx.arc(node.x, node.y, 4, 0, 2 * Math.PI)
-            ctx.fill()
-
-            ctx.fillStyle = "#e5e7eb"
-
-            ctx.fillText(
-              label,
-              node.x + 6,
-              node.y + 3
-            )
-
-          }}
-
-        />
-
-      </div>
-
-
-      {/* Controls */}
-      <div className="px-4 sm:px-6 mt-4 flex gap-3">
-
-        <button
-          onClick={() => fgRef.current.zoomToFit(400)}
-          className="
-            text-sm
-            px-3 py-1.5
-            bg-gray-900
-            border border-gray-700
-            rounded
-            hover:border-purple-500
-          "
+        {/* Graph area */}
+        <div
+          ref={containerRef}
+          className="flex-1 relative bg-black"
         >
-          Fit to screen
-        </button>
 
-        <button
-          onClick={() => fgRef.current.zoom(1.2, 400)}
-          className="
-            text-sm
-            px-3 py-1.5
-            bg-gray-900
-            border border-gray-700
-            rounded
-            hover:border-purple-500
-          "
-        >
-          Zoom in
-        </button>
+          <ForceGraph2D
+            ref={fgRef}
+            width={dimensions.width}
+            height={dimensions.height}
+            graphData={data}
+            backgroundColor="#000000"
+            cooldownTicks={100}
+            nodeRelSize={6}
+            linkColor={() => "rgba(139,92,246,0.6)"}
+            linkWidth={1.5}
+            nodeLabel="name"
 
-        <button
-          onClick={() => fgRef.current.zoom(0.8, 400)}
-          className="
-            text-sm
-            px-3 py-1.5
-            bg-gray-900
-            border border-gray-700
-            rounded
-            hover:border-purple-500
-          "
-        >
-          Zoom out
-        </button>
+            onNodeClick={(node) => navigate(`/dive/${node.id}`)}
+            onNodeHover={(node) => {
+              document.body.style.cursor = node ? "pointer" : "default"
+            }}
+
+            nodeCanvasObject={(node, ctx, globalScale) => {
+
+              const label = node.name
+              const fontSize = 14 / globalScale
+
+              ctx.font = `${fontSize}px Inter`
+              ctx.textAlign = "left"
+              ctx.textBaseline = "middle"
+
+              // Glow circle
+              ctx.beginPath()
+              ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI)
+              ctx.fillStyle = "#22c55e"
+              ctx.shadowColor = "#22c55e"
+              ctx.shadowBlur = 15
+              ctx.fill()
+              ctx.shadowBlur = 0
+
+              // Label
+              ctx.fillStyle = "#e5e7eb"
+              ctx.fillText(label, node.x + 8, node.y)
+            }}
+          />
+
+          {/* Floating controls */}
+          <div className="absolute bottom-6 right-6 flex flex-col gap-3">
+
+            <button
+              onClick={() => fgRef.current.zoomToFit(400, 80)}
+              className="bg-gray-900/80 backdrop-blur border border-gray-700 px-4 py-2 rounded-xl text-sm hover:border-purple-500 transition"
+            >
+              Fit
+            </button>
+
+            <button
+              onClick={() => fgRef.current.zoom(1.2, 400)}
+              className="bg-gray-900/80 backdrop-blur border border-gray-700 px-4 py-2 rounded-xl text-sm hover:border-purple-500 transition"
+            >
+              +
+            </button>
+
+            <button
+              onClick={() => fgRef.current.zoom(0.8, 400)}
+              className="bg-gray-900/80 backdrop-blur border border-gray-700 px-4 py-2 rounded-xl text-sm hover:border-purple-500 transition"
+            >
+              −
+            </button>
+
+          </div>
+
+        </div>
 
       </div>
 
     </DashboardLayout>
-
   )
-
 }
 
 export default GraphPage

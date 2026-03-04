@@ -681,7 +681,7 @@ function SprintDetail() {
                           className="
                             block text-left w-full
                             text-sm text-green-400
-                            hover:underline
+                            hover:underline hover:underline-offset-4
                           "
                         >
                           {d.title}

@@ -68,7 +68,7 @@ async def create_deep_dive(
         "tests": deep_dive.tests,
         "conclusion": deep_dive.conclusion,
         "tags": normalize_tags(deep_dive.tags),
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(),
         "references": resolved_ids
     }
 
@@ -97,6 +97,42 @@ async def get_deep_dives(
 
     return dives
 
+@router.get("/by-title/{title}")
+async def get_dive_by_title(
+    title: str,
+    current_user=Depends(get_current_user)
+):
+    dive = await database["deep_dives"].find_one({
+        "title": {"$regex": f"^{title}$", "$options": "i"},
+        "user_id": current_user["github_id"]
+    })
+
+    if not dive:
+        raise HTTPException(status_code=404, detail="Dive not found")
+
+    dive["_id"] = str(dive["_id"])
+    return dive
+
+@router.get("/public/by-title/{username}/{title}")
+async def get_public_dive_by_title(username: str, title: str):
+
+    user = await database["users"].find_one({"username": username})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    dive = await database["deep_dives"].find_one({
+        "title": {"$regex": f"^{title}$", "$options": "i"},
+        "user_id": user["github_id"]
+    })
+
+    if not dive:
+        raise HTTPException(status_code=404, detail="Dive not found")
+
+    dive["_id"] = str(dive["_id"])
+
+    return dive
+    
 @router.put("/{dive_id}")
 async def update_deep_dive(
     dive_id: str,
@@ -177,7 +213,6 @@ async def update_deep_dive(
 
     return updated
 
-
 @router.delete("/{dive_id}")
 async def delete_deep_dive(
     dive_id: str,
@@ -200,7 +235,6 @@ async def delete_deep_dive(
     await database["deep_dives"].delete_one({"_id": ObjectId(dive_id)})
 
     return {"message": "Deep dive deleted"}
-
 
 @router.get("/{dive_id}/versions")
 async def get_versions(
@@ -230,7 +264,6 @@ async def get_versions(
         })
 
     return versions
-
 
 @router.post("/{dive_id}/restore/{version_id}")
 async def restore_version(
@@ -288,7 +321,6 @@ async def restore_version(
 
     return {"status": "restored"}
 
-
 @router.get("/graph")
 async def get_graph(current_user=Depends(get_current_user)):
 
@@ -316,8 +348,7 @@ async def get_graph(current_user=Depends(get_current_user)):
         "nodes": nodes,
         "links": links
     }
-    
-    
+      
 @router.get("/activity")
 async def get_activity(current_user=Depends(get_current_user)):
 
