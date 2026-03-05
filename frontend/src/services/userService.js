@@ -6,6 +6,8 @@ export const userService = {
 
   getMyStats: () => api.get("/users/me/stats"),
 
+  updateCuriosity: (body) => api.patch(`/users/me/curiosity`, body),
+
   getPublicProfile: (username) =>
     api.get(`/users/${username}`, {
       skipAuthRedirect: true

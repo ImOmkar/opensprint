@@ -814,7 +814,7 @@ function SprintDetail() {
         problem={selectedDive?.problem}
         username={user?.username}
         streak={0}
-        publicUrl={`${window.location.origin}/u/${user?.username}/${id}`}
+        publicUrl={`${window.location.origin}/d/${selectedDive?._id}`}
       />
 
       <div style={{

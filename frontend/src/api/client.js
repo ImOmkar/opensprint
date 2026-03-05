@@ -112,9 +112,10 @@ export const api = {
       ...options
     }),
 
-  patch: (path, options = {}) =>
+  patch: (path, body, options = {}) =>
     request(path, {
       method: "PATCH",
+      body: JSON.stringify(body),
       ...options
     }),
 

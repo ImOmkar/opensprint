@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams,useNavigate } from "react-router-dom"
 // import { api } from "../api/client"
 import { userService } from "../services/userService"
 import { formatExactTime, formatRelativeTime } from "../utils/time"
@@ -7,7 +7,9 @@ import Spinner from "../components/Spinner"
 import PublicLayout from "../components/PublicLayout"
 import LinkedMarkdown from "../components/LinkedMarkdown"
 
+
 function PublicSprint() {
+  const navigate = useNavigate()
   const { username, sprintId } = useParams()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -147,7 +149,6 @@ function PublicSprint() {
           title={formatExactTime(data.sprint.created_at)}>
           Created {formatRelativeTime(data.sprint.created_at)}
         </p>
-
         {data.sprint.completed_at && (
           <p
             className="text-xs text-blue-400 mt-1"
@@ -156,13 +157,12 @@ function PublicSprint() {
             Completed {formatRelativeTime(data.sprint.completed_at)}
           </p>
         )}
-
         <p className="text-sm text-gray-600 mt-2">
-          Status: {data.sprint.status}
+          Status: <span className="capitalize text-white">{data.sprint.status}</span>
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="flex flex-col gap-2">
         {data.deep_dives.length === 0 && (
           <p className="text-gray-500">No deep dives yet.</p>
         )}
@@ -171,13 +171,18 @@ function PublicSprint() {
           <div
             key={dive._id}
             id={dive._id}
-            className="bg-gray-900 p-6 rounded-xl border border-gray-800 hover:border-purple-500 transition"
-          >
-            <h3 className="text-xl font-bold text-green-400 mb-3">
+            onClick={() => navigate(`/d/${dive._id}`)}
+            className="bg-gray-900 p-4 rounded-xl border border-gray-800 hover:border-purple-500 cursor-pointer transition">
+
+            <h3 className="text-xl font-bold text-green-400">
               {dive.title}
             </h3>
 
-            <div id={dive._id} className="space-y-6">
+            <p className="text-xs text-gray-500">
+              {formatRelativeTime(dive.created_at)}
+            </p>
+
+            {/* <div id={dive._id} className="space-y-6">
 
               {dive.problem && (
                 <div>
@@ -243,7 +248,7 @@ function PublicSprint() {
                 </div>
               )}
 
-            </div>
+            </div> */}
           </div>
         ))}
       </div>

@@ -3,6 +3,7 @@ from app.db.database import database
 from bson import ObjectId
 from app.auth.dependencies import get_current_user
 from datetime import datetime, timedelta
+from app.models.user import CuriosityUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -40,6 +41,25 @@ async def get_my_stats(current_user=Depends(get_current_user)):
         "total_deep_dives": total_deep_dives
     }
 
+@router.patch("/me/curiosity")
+async def update_curiosity(
+    body: CuriosityUpdate,
+    current_user=Depends(get_current_user)
+):
+
+    curiosity = body.curiosity
+    print("curiosity", curiosity)
+
+    if curiosity:
+        curiosity = curiosity.strip()
+
+    await database["users"].update_one(
+        {"github_id": current_user["github_id"]},
+        {"$set": {"curiosity": curiosity}}
+    )
+
+    return {"success": True}
+
 @router.get("/{username}")
 async def public_profile(username: str):
     user = await database["users"].find_one(
@@ -50,6 +70,8 @@ async def public_profile(username: str):
         raise HTTPException(status_code=404, detail="User not found")
     
     user["_id"] = str(user["_id"])
+
+    user["curiosity"] = user.get("curiosity", "Learning in public")
     
     #fetch user sprints
     sprints = []
@@ -72,8 +94,6 @@ async def public_profile(username: str):
         "sprints":sprints,
         "stats": stats
     }
-    
-    
     
 @router.get("/{username}/timeline")
 async def public_timeline(username: str):
@@ -105,9 +125,7 @@ async def public_timeline(username: str):
         })
 
     return timeline
-    
-    
-    
+      
 @router.get("/{username}/activity")
 async def public_activity(username: str):
 
@@ -163,7 +181,6 @@ async def public_activity(username: str):
         "total_active_days": len(activity)
     }
     
-
 @router.get("/{username}/{sprint_id}")
 async def public_sprint_detail(username: str, sprint_id: str):
 

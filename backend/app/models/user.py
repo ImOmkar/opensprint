@@ -9,7 +9,10 @@ class UserBase(BaseModel):
     username: str
     email: Optional[EmailStr] = None
     avatar_url: Optional[str] = None
-    
+    # curiosity: Optional[str] = None
+
+class CuriosityUpdate(BaseModel):
+    curiosity: Optional[str] = None
     
 class UserInDB(UserBase):
     created_at: datetime

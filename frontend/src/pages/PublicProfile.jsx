@@ -55,26 +55,14 @@ function PublicProfile() {
   return (
     <PublicLayout>
 
-      {/* <div className="flex items-center gap-4 mb-10">
-        <img
-          src={data.user.avatar_url}
-          alt="avatar"
-          className="w-16 h-16 rounded-full"
-        />
-        <h2 className="text-2xl font-bold text-green-400">
-          {data.user.username}
-        </h2>
-      </div> */}
-
       {/* Profile Header */}
       <div className="
         flex items-center gap-5
-        mb-10
+        mb-4
         bg-gray-900/60
         border border-gray-800
         rounded-xl
-        p-5
-      ">
+        p-5">
 
         {/* Avatar */}
         <div className="p-[2px] rounded-full bg-gradient-to-br from-green-500/40 to-purple-500/40">
@@ -118,6 +106,25 @@ function PublicProfile() {
         </div>
 
       </div>
+
+      {/* curiosity */}
+      {data.user.curiosity && (
+        <div className="
+          mb-6
+          bg-gray-900/60
+          border border-gray-800
+          rounded-xl
+          p-4
+        ">
+          <p className="text-xs text-gray-500 mb-1">
+          🤔 Current Curiosity
+          </p>
+
+          <p className="text-white">
+            {data.user.curiosity}
+          </p>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b border-gray-800 mb-8 overflow-x-auto">
@@ -221,7 +228,7 @@ function PublicProfile() {
 
                     <Link
                       key={dive.id}
-                      to={`/u/${data.user.username}/${dive.sprint_id}`}
+                      to={`/d/${dive.id}`}
                       className="
                         block
                         bg-gray-900

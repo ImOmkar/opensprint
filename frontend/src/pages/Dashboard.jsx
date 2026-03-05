@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
 import { sprintService } from "../services/sprintService"
@@ -37,11 +37,18 @@ function Dashboard() {
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [isSprintModalOpen, setIsSprintModalOpen] = useState(false)
+  const [curiosity, setCuriosity] = useState("")
+  const [editingCuriosity, setEditingCuriosity] = useState(false)
+  const [savingCuriosity, setSavingCuriosity] = useState(false)
+
+  const curiosityRef = useRef(null)
+  const originalCuriosity = useRef(curiosity)
 
   useEffect(() => {
     userService.getMe()
       .then(async data => {
         setUser(data)
+        setCuriosity(data?.curiosity || "")
         await Promise.all([
           loadSprints(),
           loadStats(),
@@ -52,6 +59,31 @@ function Dashboard() {
       })
       .catch(() => navigate("/"))
   }, [])
+
+  useEffect(() => {
+
+    function handleClickOutside(event) {
+  
+      if (
+        editingCuriosity &&
+        curiosityRef.current &&
+        !curiosityRef.current.contains(event.target)
+      ) {
+  
+        setEditingCuriosity(false)
+        saveCuriosity()
+  
+      }
+  
+    }
+  
+    document.addEventListener("mousedown", handleClickOutside)
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  
+  }, [editingCuriosity, curiosity])
 
   const loadSprints = async () => {
     const data = await sprintService.getMine()
@@ -272,6 +304,38 @@ function Dashboard() {
     setSearching(false)
   }
 
+  const saveCuriosity = async () => {
+
+    if (curiosity === originalCuriosity.current) {
+      return
+    }
+  
+    try {
+  
+      setSavingCuriosity(true)
+
+      console.log(curiosity)
+  
+      const value = curiosity?.trim()
+  
+      await userService.updateCuriosity({
+        curiosity: value || null
+      })
+  
+      originalCuriosity.current = value
+  
+      toast.success("Curiosity updated")
+  
+    } catch {
+  
+      toast.error("Failed to update curiosity")
+  
+    }
+  
+    setSavingCuriosity(false)
+  
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -305,6 +369,105 @@ function Dashboard() {
           }}
         />
 
+        {/* Current Curiosity */}
+        {/* <div className="
+          mb-6
+          bg-gray-900/60
+          border border-gray-800
+          rounded-xl
+          p-4">
+
+          <div className="flex items-center justify-between mb-2">
+
+            <p className="text-xs text-gray-400 uppercase tracking-wide">
+              Current Curiosity
+            </p>
+
+          </div>
+
+          <div className="flex gap-2">
+
+            <input
+              value={curiosity}
+              onChange={(e) => setCuriosity(e.target.value)}
+              placeholder="What are you exploring right now?"
+              className="
+                flex-1
+                bg-gray-950
+                border border-gray-800
+                rounded-lg
+                px-3 py-2
+                text-sm
+                text-white
+                focus:outline-none
+                focus:border-purple-500
+              "
+            />
+
+            <button
+              onClick={saveCuriosity}
+              disabled={savingCuriosity}
+              className="
+                px-4 py-2
+                bg-purple-600
+                hover:bg-purple-500
+                text-white
+                text-sm
+                rounded-lg
+                transition
+              "
+            >
+              Save
+            </button>
+
+          </div>
+
+        </div> */}
+
+        <div
+          ref={curiosityRef}
+          className="
+            mb-6
+            bg-gray-900/60
+            border border-gray-800
+            rounded-xl
+            p-4
+          ">
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+          🤔 Current Curiosity
+          </p>
+          {!editingCuriosity ? (
+            <p
+              onClick={() => setEditingCuriosity(true)}
+              className="
+                text-white
+                text-sm
+                cursor-text
+                hover:text-purple-400
+              "
+            >
+              {curiosity || "Click to add what you're exploring right now"}
+            </p>
+          ) : (
+            <input
+              autoFocus
+              value={curiosity}
+              onChange={(e) => setCuriosity(e.target.value)}
+              className="
+                w-full
+                bg-gray-950
+                border border-purple-500
+                rounded-lg
+                px-3 py-2
+                text-sm
+                text-white
+                focus:outline-none
+              "
+            />
+
+          )}
+        </div>
+
         {/* sprint stats */}
         <StatGrid stats={stats} />
 
@@ -313,14 +476,12 @@ function Dashboard() {
           <ActivityHeatmap />
         </div>
 
-
         <SprintGrid
           sprints={sprints}
           onEdit={handleEditSprint}
           onDelete={setDeleteSprintId}
           onToggle={handleToggleSprint}
         />
-
 
         <SprintModal
           isOpen={isSprintModalOpen}

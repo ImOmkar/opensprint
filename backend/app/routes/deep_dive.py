@@ -132,6 +132,63 @@ async def get_public_dive_by_title(username: str, title: str):
     dive["_id"] = str(dive["_id"])
 
     return dive
+
+@router.get("/public/{dive_id}")
+async def get_public_dive(dive_id: str):
+
+    dive = await database["deep_dives"].find_one({
+        "_id": ObjectId(dive_id)
+    })
+
+    if not dive:
+        raise HTTPException(status_code=404, detail="Dive not found")
+
+    # verify sprint is public
+    sprint = await database["sprints"].find_one({
+        "_id": ObjectId(dive["sprint_id"])
+    })
+
+    if not sprint:
+        raise HTTPException(status_code=404, detail="Sprint not found")
+
+    # fetch user
+    user = await database["users"].find_one({
+        "github_id": dive["user_id"]
+    })
+
+    dive["_id"] = str(dive["_id"])
+    dive["sprint_id"] = str(dive["sprint_id"])
+
+    return {
+        "dive": dive,
+        "user": {
+            "username": user["username"],
+            "avatar_url": user.get("avatar_url")
+        },
+        "sprint": {
+            "_id": str(sprint["_id"]),
+            "title": sprint["title"]
+        }
+    }
+
+@router.get("/public/{dive_id}/backlinks")
+async def get_public_backlinks(dive_id: str):
+
+    dives = await database["deep_dives"].find({
+        "references": dive_id
+    }).to_list(50)
+
+    results = []
+
+    for dive in dives:
+
+        results.append({
+            "_id": str(dive["_id"]),
+            "title": dive["title"],
+            "created_at": dive.get("created_at")
+        })
+
+    return results
     
 @router.put("/{dive_id}")
 async def update_deep_dive(

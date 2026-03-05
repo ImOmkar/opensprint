@@ -8,6 +8,11 @@ export const deepDiveService = {
   getById: (id) =>
     api.get(`/deep-dives/${id}`),
 
+  getPublicDive: (id) =>
+    api.get(`/deep-dives/public/${id}`, {
+      skipAuthRedirect: true
+  }),
+
   create: (body) =>
     api.post("/deep-dives", body),
 

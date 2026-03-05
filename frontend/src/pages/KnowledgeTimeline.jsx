@@ -177,7 +177,7 @@ function KnowledgeTimeline() {
                     <div
                       key={dive.id}
                       onClick={() =>
-                        navigate(`/sprint/${dive.sprint_id}`)
+                        navigate(`/dive/${dive.id}`)
                       }
                       className="
                         relative
