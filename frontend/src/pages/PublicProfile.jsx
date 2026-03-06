@@ -10,6 +10,7 @@ function PublicProfile() {
 
   const [data, setData] = useState(null)
   const [timeline, setTimeline] = useState({})
+  const [concepts, setConcept] = useState([])
   const [activeTab, setActiveTab] = useState("sprints")
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -20,12 +21,14 @@ function PublicProfile() {
     Promise.all([
       userService.getPublicProfile(username),
       timelineService.getPublic(username),
-      userService.getPublicActivity(username)
+      userService.getPublicActivity(username),
+      userService.getConcepts(username),
     ])
-      .then(([profile, timelineData, activity]) => {
+      .then(([profile, timelineData, activity, conceptData]) => {
         setData(profile)
         setTimeline(timelineData)
         setStats(activity)
+        setConcept(conceptData.concepts || [])
         setLoading(false)
       })
       .catch(() => {
@@ -35,6 +38,7 @@ function PublicProfile() {
 
   }, [username])
 
+  // console.log("concepts", concepts)
 
   if (!data) {
     return (
@@ -58,7 +62,7 @@ function PublicProfile() {
       {/* Profile Header */}
       <div className="
         flex items-center gap-5
-        mb-4
+        mb-6
         bg-gray-900/60
         border border-gray-800
         rounded-xl
@@ -122,6 +126,64 @@ function PublicProfile() {
 
           <p className="text-white">
             {data.user.curiosity}
+          </p>
+        </div>
+      )}
+
+      {/* explored concepts */}
+      {concepts.length > 0 && (
+        <div className="
+          mb-6
+          bg-gray-900/60
+          border border-gray-800
+          rounded-xl
+          p-5
+        ">
+
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-4">
+          🕵🏼‍♂️ Explored Concepts
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+
+            {concepts.map((concept, index) => (
+              <span
+                key={index}
+                className="
+                  px-3 py-1
+                  text-sm
+                  bg-purple-500/10
+                  text-purple-300
+                  border border-purple-500/20
+                  rounded-full
+                "
+              >
+                {concept}
+              </span>
+            ))}
+
+          </div>
+
+        </div>
+      )}
+
+      {/* open question  */}
+      {data?.user?.open_question && (
+        <div
+          className="
+            mb-4
+            bg-gray-900/60
+            border border-gray-800
+            rounded-xl
+            p-4
+          "
+        >
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+          ❓ Open Question
+          </p>
+
+          <p className="text-white text-sm">
+            {data?.user?.open_question}
           </p>
         </div>
       )}

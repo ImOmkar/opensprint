@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from jose import jwt
 import httpx
 import os
+from app.models.user import OpenQuestionUpdate
 
 router = APIRouter(prefix="/auth/github", tags=["Auth"])
 
@@ -63,6 +64,8 @@ async def github_callback(code: str, response: Response):
         "username": user_data["login"],
         "email": user_data.get("email"),
         "avatar_url": user_data.get("avatar_url"),
+        "curiosity": None,
+        "open_question": None,
         "created_at": datetime.now(),
     }
 
@@ -71,6 +74,7 @@ async def github_callback(code: str, response: Response):
     )
 
     if not existing_user:
+        user_doc["created_at"] = datetime.now()
         await database["users"].insert_one(user_doc)
 
     # 🔹 Create JWT

@@ -40,15 +40,23 @@ function Dashboard() {
   const [curiosity, setCuriosity] = useState("")
   const [editingCuriosity, setEditingCuriosity] = useState(false)
   const [savingCuriosity, setSavingCuriosity] = useState(false)
+  const [openQuestion, setOpenQuestion] = useState("")
+  const [editingQuestion, setEditingQuestion] = useState(false)
+  
+  const questionRef = useRef(null)
+  const originalQuestion = useRef("")
 
   const curiosityRef = useRef(null)
   const originalCuriosity = useRef(curiosity)
+
 
   useEffect(() => {
     userService.getMe()
       .then(async data => {
         setUser(data)
         setCuriosity(data?.curiosity || "")
+        setOpenQuestion(data?.open_question || "")
+        originalQuestion.current = data?.open_question || ""
         await Promise.all([
           loadSprints(),
           loadStats(),
@@ -336,6 +344,30 @@ function Dashboard() {
   
   }
 
+  const saveOpenQuestion = async () => {
+
+    if (openQuestion === originalQuestion.current) return
+  
+    try {
+  
+      const value = openQuestion?.trim()
+  
+      await userService.updateOpenQuestion({
+        open_question: value || null
+      })
+  
+      originalQuestion.current = value
+  
+      toast.success("Open question updated")
+  
+    } catch {
+  
+      toast.error("Failed to update question")
+  
+    }
+  
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -370,60 +402,6 @@ function Dashboard() {
         />
 
         {/* Current Curiosity */}
-        {/* <div className="
-          mb-6
-          bg-gray-900/60
-          border border-gray-800
-          rounded-xl
-          p-4">
-
-          <div className="flex items-center justify-between mb-2">
-
-            <p className="text-xs text-gray-400 uppercase tracking-wide">
-              Current Curiosity
-            </p>
-
-          </div>
-
-          <div className="flex gap-2">
-
-            <input
-              value={curiosity}
-              onChange={(e) => setCuriosity(e.target.value)}
-              placeholder="What are you exploring right now?"
-              className="
-                flex-1
-                bg-gray-950
-                border border-gray-800
-                rounded-lg
-                px-3 py-2
-                text-sm
-                text-white
-                focus:outline-none
-                focus:border-purple-500
-              "
-            />
-
-            <button
-              onClick={saveCuriosity}
-              disabled={savingCuriosity}
-              className="
-                px-4 py-2
-                bg-purple-600
-                hover:bg-purple-500
-                text-white
-                text-sm
-                rounded-lg
-                transition
-              "
-            >
-              Save
-            </button>
-
-          </div>
-
-        </div> */}
-
         <div
           ref={curiosityRef}
           className="
@@ -466,6 +444,56 @@ function Dashboard() {
             />
 
           )}
+        </div>
+
+        <div
+          ref={questionRef}
+          className="
+            mb-6
+            bg-gray-900/60
+            border border-gray-800
+            rounded-xl
+            p-4
+          "
+        >
+
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+            Open Question
+          </p>
+
+          {!editingQuestion ? (
+
+            <p
+              onClick={() => setEditingQuestion(true)}
+              className="text-white text-sm cursor-text hover:text-purple-400"
+            >
+              {openQuestion || "Click to add something you're trying to understand"}
+            </p>
+
+          ) : (
+
+            <input
+              autoFocus
+              value={openQuestion}
+              onChange={(e) => setOpenQuestion(e.target.value)}
+              onBlur={() => {
+                setEditingQuestion(false)
+                saveOpenQuestion()
+              }}
+              className="
+                w-full
+                bg-gray-950
+                border border-purple-500
+                rounded-lg
+                px-3 py-2
+                text-sm
+                text-white
+                focus:outline-none
+              "
+            />
+
+          )}
+
         </div>
 
         {/* sprint stats */}

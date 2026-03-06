@@ -3,10 +3,9 @@ from app.db.database import database
 from bson import ObjectId
 from app.auth.dependencies import get_current_user
 from datetime import datetime, timedelta
-from app.models.user import CuriosityUpdate
+from app.models.user import CuriosityUpdate, OpenQuestionUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
-
 
 @router.get("/")
 async def get_users():
@@ -60,6 +59,18 @@ async def update_curiosity(
 
     return {"success": True}
 
+@router.patch("/me/open-question")
+async def update_open_question(
+    body: OpenQuestionUpdate,
+    current_user=Depends(get_current_user)):
+    
+    await database["users"].update_one(
+        {"github_id": current_user["github_id"]},
+        {"$set": {"open_question": body.open_question}}
+    )
+
+    return {"success": True}
+
 @router.get("/{username}")
 async def public_profile(username: str):
     user = await database["users"].find_one(
@@ -73,6 +84,8 @@ async def public_profile(username: str):
 
     user["curiosity"] = user.get("curiosity", "Learning in public")
     
+    user["open_question"] = user.get("open_question", "Nothing to ask...")
+
     #fetch user sprints
     sprints = []
     async for sprint in database["sprints"].find(
@@ -181,6 +194,32 @@ async def public_activity(username: str):
         "total_active_days": len(activity)
     }
     
+@router.get("/{username}/concepts")
+async def get_user_concepts(username: str):
+    user = await database["users"].find_one({"username": username})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    dives = database["deep_dives"].find({
+        "user_id": user["github_id"]
+    })
+
+    concepts = set()
+
+    async for dive in dives:
+
+        if dive.get("tag"):
+            for tag in dive["tag"]:
+                concepts.add(tag)
+        
+        if dive.get("title"):
+            concepts.add(dive["title"])
+
+    return {
+        "concepts": list(concepts)[:12]
+    }
+
 @router.get("/{username}/{sprint_id}")
 async def public_sprint_detail(username: str, sprint_id: str):
 

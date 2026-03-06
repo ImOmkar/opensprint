@@ -8,6 +8,8 @@ export const userService = {
 
   updateCuriosity: (body) => api.patch(`/users/me/curiosity`, body),
 
+  updateOpenQuestion: (body) => api.patch("/users/me/open-question", body),
+
   getPublicProfile: (username) =>
     api.get(`/users/${username}`, {
       skipAuthRedirect: true
@@ -22,6 +24,12 @@ export const userService = {
     api.get(`/users/${username}/activity`, {
       skipAuthRedirect: true
   }),
+
+  getConcepts: (username) =>
+    api.get(`/users/${username}/concepts`, {
+      skipAuthRedirect: true
+  }),
+
 }
 
 

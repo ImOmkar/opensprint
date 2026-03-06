@@ -47,6 +47,7 @@ function Section({ title, content }) {
   )
 }
 
+
 function SprintDetail() {
   const { id } = useParams()
   const draftKey = `opensprint_draft_${id}`
@@ -110,6 +111,8 @@ function SprintDetail() {
     !!title || !!problem || !!hypothesis || !!tests || !!conclusion || tags.length > 0
 
   const [showDraftNotice, setShowDraftNotice] = useState(false)
+
+  const [unexploredConcepts, setUnexploredConcepts] = useState([])
 
   const handleDownloadReport = async () => {
 
@@ -236,6 +239,23 @@ function SprintDetail() {
 
   }, [title, problem, hypothesis, tests, conclusion, tags, id, isDiveModalOpen])
 
+  // useEffect(() => {
+
+  //   if (dives.length === 0) return
+  
+  //   const unexplored = getUnexploredConcepts()
+  
+  //   setUnexploredConcepts(unexplored)
+  
+  // }, [dives])
+
+  useEffect(() => {
+
+    const unexplored = getUnexploredConcepts()
+    setUnexploredConcepts(unexplored)
+  
+  }, [dives])
+
   const loadSprint = () => {
     sprintService.getMine()
       .then(data => {
@@ -255,10 +275,79 @@ function SprintDetail() {
 
   }
 
+  function extractLinks(text) {
+    if (!text) return []
+  
+    const matches = [...text.matchAll(/\[\[(.*?)\]\]/g)]
+    return matches.map(m => m[1].trim())
+  }
+
   const loadDives = () => {
     deepDiveService.getBySprint(id)
       .then(data => setDives(data))
       .catch(() => navigate("/"))
+  }
+
+  // const getUnexploredConcepts = () => {
+
+  //   const allLinks = new Set()
+  //   const diveTitles = new Set()
+  
+  //   dives.forEach(dive => {
+  
+  //     diveTitles.add(dive.title)
+  
+  //     const texts = [
+  //       dive.problem,
+  //       dive.hypothesis,
+  //       dive.tests,
+  //       dive.conclusion
+  //     ]
+  
+  //     texts.forEach(t => {
+  //       extractLinks(t).forEach(link => {
+  //         allLinks.add(link)
+  //       })
+  //     })
+  
+  //   })
+  
+  //   const unexplored = [...allLinks].filter(
+  //     link => !diveTitles.has(link)
+  //   )
+  
+  //   return unexplored
+  // }
+
+  function getUnexploredConcepts() {
+
+    const allLinks = new Set()
+    const diveTitles = new Set()
+  
+    dives.forEach(dive => {
+  
+      diveTitles.add(dive.title.toLowerCase())
+  
+      const texts = [
+        dive.problem,
+        dive.hypothesis,
+        dive.tests,
+        dive.conclusion
+      ]
+  
+      texts.forEach(t => {
+        extractLinks(t).forEach(link => {
+          allLinks.add(link)
+        })
+      })
+  
+    })
+  
+    const unexplored = [...allLinks].filter(
+      link => !diveTitles.has(link.toLowerCase())
+    )
+  
+    return unexplored
   }
 
   const handleCreateDive = async (e) => {
@@ -315,6 +404,21 @@ function SprintDetail() {
     } catch (err) {
       toast.error("Failed to delete a dive")
     }
+  }
+
+  const handleCreateFromConcept = (concept) => {
+
+    setEditingDiveId(null)
+    setSelectedDiveId(null)
+  
+    setTitle(concept)
+    setProblem("")
+    setHypothesis("")
+    setTests("")
+    setConclusion("")
+    setTags([])
+  
+    setIsDiveModalOpen(true)
   }
 
   const handleEditDive = (dive) => {
@@ -426,6 +530,8 @@ function SprintDetail() {
     setTags([])
   }
 
+  console.log("unexplored concepts", unexploredConcepts)
+
   return (
     // <div className="min-h-screen bg-black text-white">
     <DashboardLayout user={user}>
@@ -529,6 +635,63 @@ function SprintDetail() {
                       #{tag} ({count})
                     </button>
 
+                  ))}
+
+                </div>
+
+              </div>
+            )}
+
+            {unexploredConcepts.length > 0 && (
+              <div
+                className="
+                  mb-6
+                  bg-gray-900/60
+                  border border-gray-800
+                  rounded-xl
+                  p-5
+                "
+              >
+
+                <p className="text-xs text-gray-400 uppercase tracking-wide mb-4">
+                  Unexplored Concepts
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+
+                  {/* {unexploredConcepts.map((concept, index) => (
+                    <button
+                      key={index}
+                      className="
+                        px-3 py-1
+                        text-sm
+                        bg-yellow-500/10
+                        text-yellow-300
+                        border border-yellow-500/20
+                        rounded-full
+                      "
+                    >
+                      {concept}
+                    </button>
+                  ))} */}
+
+                  {unexploredConcepts.map((concept, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleCreateFromConcept(concept)}
+                      className="
+                        px-3 py-1
+                        text-sm
+                        bg-yellow-500/10
+                        text-yellow-300
+                        border border-yellow-500/20
+                        rounded-full
+                        hover:bg-yellow-500/20
+                        transition
+                      "
+                    >
+                      {concept}
+                    </button>
                   ))}
 
                 </div>
