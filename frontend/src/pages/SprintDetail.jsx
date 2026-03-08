@@ -114,6 +114,8 @@ function SprintDetail() {
 
   const [unexploredConcepts, setUnexploredConcepts] = useState([])
 
+  const [expandingConcept, setExpandingConcept] = useState(null)
+
   const handleDownloadReport = async () => {
 
     const element = document.getElementById("sprint-report")
@@ -406,19 +408,39 @@ function SprintDetail() {
     }
   }
 
-  const handleCreateFromConcept = (concept) => {
+  // const handleCreateFromConcept = (concept) => {
 
-    setEditingDiveId(null)
-    setSelectedDiveId(null)
+  //   setEditingDiveId(null)
+  //   setSelectedDiveId(null)
   
-    setTitle(concept)
-    setProblem("")
-    setHypothesis("")
-    setTests("")
-    setConclusion("")
-    setTags([])
+  //   setTitle(concept)
+  //   setProblem("")
+  //   setHypothesis("")
+  //   setTests("")
+  //   setConclusion("")
+  //   setTags([])
   
-    setIsDiveModalOpen(true)
+  //   setIsDiveModalOpen(true)
+  // }
+
+  const handleCreateFromConcept = async (concept) => {
+    setExpandingConcept(concept)
+    try {
+      
+      const result = await aiService.expandConcept(concept)
+      setEditingDiveId(null)
+      setSelectedDiveId(null)
+      setTitle(concept)
+      setProblem(result.problem || "")
+      setHypothesis(result.hypothesis || "")
+      setTests(result.tests || "")
+      setConclusion(result.conclusion || "test")
+      setTags([])
+      setIsDiveModalOpen(true)
+    } catch (err) {
+      toast.error("Failed to expand concept")
+    }
+    setExpandingConcept(null)
   }
 
   const handleEditDive = (dive) => {
@@ -688,9 +710,8 @@ function SprintDetail() {
                         rounded-full
                         hover:bg-yellow-500/20
                         transition
-                      "
-                    >
-                      {concept}
+                      ">
+                      {expandingConcept === concept ? "Expanding..." : concept}
                     </button>
                   ))}
 

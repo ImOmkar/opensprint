@@ -19,5 +19,7 @@ export const aiService = {
         content
       })
     return res?.tags
-  }
+  },
+
+  expandConcept: (concept) => api.post("/ai/expand-concept", { concept }),
 }

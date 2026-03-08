@@ -1,4 +1,5 @@
 import os
+import json
 from google import genai
 from google.genai import types
 
@@ -105,3 +106,46 @@ Content:
     tags = [t.strip().lower() for t in raw.split(",") if t.strip()]
 
     return list(set(tags))
+
+
+import asyncio
+
+async def expand_concept(concept: str):
+    prompt = f"""
+You are helping an engineer explore a technical concept.
+
+concept: {concept}
+
+Return ONLY valid JSON in this format:
+
+{{
+    "problem": "..."
+    "hypothesis": "..."
+    "tests": "..."
+    "conclusion": "..."
+}}
+
+Keep explanations concise and technical.
+"""
+
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config={"response_mime_type": "application/json"}
+    )
+
+    try:
+        data = json.loads(response.text)
+    except: 
+        data = {
+            "problem": "",
+            "hypothesis": "",
+            "tests": "",
+            "conclusion": ""
+        }
+
+    return {
+        "test": concept,
+        **data
+    }
