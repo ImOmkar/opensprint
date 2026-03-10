@@ -521,4 +521,32 @@ async def get_backlinks(dive_id: str, current_user=Depends(get_current_user)):
 
     return backlinks
 
+@router.get("/{dive_id}/related")
+async def get_related_dives(
+    dive_id: str,
+    current_user=Depends(get_current_user)
+):
 
+    dive = await database["deep_dives"].find_one({
+        "_id": ObjectId(dive_id),
+        "user_id": current_user["github_id"]
+    })
+
+    if not dive:
+        raise HTTPException(status_code=404, detail="Dive not found")
+
+    tags = dive.get("tags", [])
+
+    if not tags:
+        return []
+
+    related = await database["deep_dives"].find({
+        "user_id": current_user["github_id"],
+        "_id": {"$ne": ObjectId(dive_id)},
+        "tags": {"$in": tags}
+    }).limit(5).to_list(5)
+
+    for r in related:
+        r["_id"] = str(r["_id"])
+
+    return related
