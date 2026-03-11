@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from app.auth.dependencies import get_current_user
 from app.services.ai_service import improve_text, generate_tags
 from app.models.ai import ImproveRequest
-from app.services.ai_service import expand_concept
+from app.services.ai_service import expand_concept, suggest_next_concepts
 
 router = APIRouter(prefix="/ai", tags=['ai'])
 
@@ -33,3 +33,15 @@ async def expand_concept_endpoint(body: dict, current_user=Depends(get_current_u
     result = await expand_concept(concept)
 
     return result
+
+@router.post("/suggest-concepts")
+async def suggest_concepts(
+    body: dict,
+    current_user=Depends(get_current_user)
+):
+
+    concept = body.get("concept")
+
+    suggestions = await suggest_next_concepts(concept)
+
+    return {"concepts": suggestions}

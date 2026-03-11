@@ -149,3 +149,34 @@ Keep explanations concise and technical.
         "test": concept,
         **data
     }
+
+
+
+async def suggest_next_concepts(concept: str):
+
+    prompt = f"""
+You are helping an engineer explore related concepts.
+
+Concept: {concept}
+
+Suggest 5 related engineering concepts that should be explored next.
+
+Return ONLY a JSON array.
+
+Example:
+["cache invalidation", "write-through caching"]
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+
+    text = response.text.strip().replace("```json", "").replace("```", "")
+
+    import json
+
+    try:
+        return json.loads(text)
+    except:
+        return []

@@ -97,6 +97,51 @@ async def get_deep_dives(
 
     return dives
 
+@router.get("/sprint/{sprint_id}/concept-radar")
+async def get_concept_radar(
+    sprint_id: str,
+    current_user=Depends(get_current_user)
+):
+
+    dives = await database["deep_dives"].find({
+        "sprint_id": sprint_id,
+        "user_id": current_user["github_id"]
+    }).to_list(100)
+
+    tag_counts = {}
+
+    for dive in dives:
+        for tag in dive.get("tags", []):
+            tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+    # sort by frequency
+    sorted_tags = sorted(
+        tag_counts.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    return [
+        {"concept": tag, "count": count}
+        for tag, count in sorted_tags
+    ]
+    
+@router.get("/sprint/{sprint_id}/timeline")
+async def get_sprint_timeline(
+    sprint_id: str,
+    current_user=Depends(get_current_user)
+):
+
+    dives = await database["deep_dives"].find({
+        "sprint_id": sprint_id,
+        "user_id": current_user["github_id"]
+    }).sort("created_at", 1).to_list(100)
+
+    for d in dives:
+        d["_id"] = str(d["_id"])
+
+    return dives
+
 @router.get("/by-title/{title}")
 async def get_dive_by_title(
     title: str,
@@ -490,6 +535,18 @@ async def get_activity(current_user=Depends(get_current_user)):
         "wrote_today": wrote_today
     }
 
+@router.get("/feed")
+async def get_activity_feed(current_user=Depends(get_current_user)):
+
+    dives = await database["deep_dives"].find({
+        "user_id": current_user["github_id"]
+    }).sort("created_at", -1).limit(20).to_list(20)
+
+    for dive in dives:
+        dive["_id"] = str(dive["_id"])
+
+    return dives
+    
 @router.get("/{dive_id}")
 async def get_dive_by_id(
     dive_id: str,
@@ -550,3 +607,4 @@ async def get_related_dives(
         r["_id"] = str(r["_id"])
 
     return related
+

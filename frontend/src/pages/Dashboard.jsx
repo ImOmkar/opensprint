@@ -49,6 +49,8 @@ function Dashboard() {
   const curiosityRef = useRef(null)
   const originalCuriosity = useRef(curiosity)
 
+  const [activityFeed, setActivityFeed] = useState([])
+
 
   useEffect(() => {
     userService.getMe()
@@ -60,7 +62,8 @@ function Dashboard() {
         await Promise.all([
           loadSprints(),
           loadStats(),
-          loadGlobalTags()
+          loadGlobalTags(),
+          // loadActivityFeed()
         ])
 
         setLoading(false)
@@ -92,6 +95,15 @@ function Dashboard() {
     }
   
   }, [editingCuriosity, curiosity])
+
+  const loadActivityFeed = async () => {
+    try{
+      const data = await deepDiveService.getActivityFeed()
+      setActivityFeed(data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const loadSprints = async () => {
     const data = await sprintService.getMine()
@@ -503,6 +515,49 @@ function Dashboard() {
         <div className="mb-6">
           <ActivityHeatmap />
         </div>
+
+        {/* Activity feed */}
+        {/* {activityFeed.length > 0 && (
+        <div className="
+          mb-6
+          bg-gray-900
+          border border-gray-800
+          rounded-xl
+          p-4
+        ">
+
+          <p className="text-sm text-gray-400 mb-3">
+            Activity Feed
+          </p>
+
+          <div className="space-y-2">
+
+            {activityFeed.map(item => (
+
+              <div
+                key={item._id}
+                className="flex items-center justify-between text-sm"
+              >
+
+                <button
+                  onClick={() => navigate(`/dive/${item._id}`)}
+                  className="text-green-400 hover:underline hover:underline-offset-4"
+                >
+                  {item.title}  
+                </button>
+
+                <span className="text-xs text-gray-500">
+                  {formatRelativeTime(item.created_at)}
+                </span>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        </div>
+        )} */}
 
         <SprintGrid
           sprints={sprints}

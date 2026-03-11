@@ -117,6 +117,12 @@ function SprintDetail() {
   const [expandingConcept, setExpandingConcept] = useState(null)
 
   const [relatedDives, setRelatedDives] = useState()
+
+  const [conceptRadar, setConceptRadar] = useState()
+
+  const [suggestedConcepts, setSuggestedConcepts] = useState()
+
+  const [timelineDives, setTimelineDives] = useState([])
   
 
   const handleDownloadReport = async () => {
@@ -208,6 +214,10 @@ function SprintDetail() {
 
       })
 
+    deepDiveService.getSprintTimeline(id)
+      .then(setTimelineDives)
+      .catch(() => setTimelineDives([]))
+
   }, [id])
 
   useEffect(() => {
@@ -220,6 +230,14 @@ function SprintDetail() {
     deepDiveService.getRelated(selectedDiveId)
       .then(setRelatedDives)
       .catch(() => setRelatedDives([]))
+
+    deepDiveService.getConceptRadar(id)
+      .then(setConceptRadar)
+      .catch(() => setConceptRadar([]))
+
+    aiService.expandConcept(selectedDive.title)
+      .then(res => setSuggestedConcepts(res.concepts || []))
+      .catch(() => setSuggestedConcepts([]))
 
   }, [selectedDiveId])
 
@@ -247,6 +265,8 @@ function SprintDetail() {
     return () => clearTimeout(timeout)
 
   }, [title, problem, hypothesis, tests, conclusion, tags, id, isDiveModalOpen])
+
+  console.log("suggested concepts", suggestedConcepts)
 
   // useEffect(() => {
 
@@ -615,6 +635,49 @@ function SprintDetail() {
 
             </div>
 
+            {/* timeline */}
+            {timelineDives?.length > 0 && (
+              <div className="
+                bg-gray-900
+                border border-gray-800
+                rounded-xl
+                p-4
+              ">
+
+                <p className="text-sm text-gray-400 mb-3">
+                  Sprint Timeline
+                </p>
+
+                <div className="space-y-2">
+
+                  {timelineDives?.map(d => (
+
+                    <div
+                      key={d._id}
+                      className="flex items-center gap-3 text-sm"
+                    >
+
+                      <span className="text-gray-500 text-xs w-20">
+                        {new Date(d.created_at).toLocaleDateString()}
+                      </span>
+
+                      <button
+                        onClick={() => setSelectedDiveId(d._id)}
+                        className="text-green-400 hover:underline"
+                      >
+                        {d.title}
+                      </button>
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+              </div>
+            )}
+
+            {/* draft list */}
             <DraftList
               sprintId={id}
               version={draftVersion}
@@ -629,9 +692,62 @@ function SprintDetail() {
                 setIsDiveModalOpen(true)
               }}
             />
+            
+            {/* Concept radar section */}
+            {conceptRadar?.length > 0 && (
+              <div className="
+                bg-gray-900
+                border border-gray-800
+                rounded-xl
+                p-4">
 
+                <p className="text-sm text-gray-400 mb-3">
+                  Concept Radar
+                </p>
 
-            {/* Tags */}
+                <div className="space-y-2">
+
+                  {conceptRadar?.slice(0,5).map(c => (
+
+                    <div
+                      key={c.concept}
+                      className="flex items-center justify-between text-sm"
+                    >
+
+                      <span className="text-purple-300">
+                        {c.concept}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+
+                        <div className="w-24 bg-gray-800 h-2 rounded">
+
+                          <div
+                            className="bg-purple-500 h-2 rounded"
+                            style={{
+                              width: `${c.count * 20}%`
+                            }}
+                          />
+
+                        </div>
+
+                        <span className="text-gray-500 text-xs">
+                          {c.count}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+              </div>
+
+            )}
+
+            {/* Tags section */}
             {Object.keys(tagCounts).length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
                 <div className="flex items-center justify-between">
@@ -671,6 +787,7 @@ function SprintDetail() {
               </div>
             )}
 
+            {/* unexplored concepts section */}
             {unexploredConcepts.length > 0 && (
               <div
                 className="
@@ -739,8 +856,7 @@ function SprintDetail() {
               </div>
             )}
 
-
-            {/* Dive List */}
+            {/* Dive List section */}
             <div className="bg-gray-900 border border-gray-800 rounded-xl">
 
               <div className="flex justify-between items-center p-4 border-b border-gray-800">
@@ -865,8 +981,8 @@ function SprintDetail() {
                 <Section title="Tests" content={selectedDive.tests} />
                 <Section title="Conclusion" content={selectedDive.conclusion} />
                 
-                {/* backlinks */}
-                {backlinks.length > 0 && (
+                {/* backlinks section */}
+                {backlinks?.length > 0 && (
 
                   <div className="mt-8 border-t border-gray-800 pt-4">
 
@@ -898,10 +1014,10 @@ function SprintDetail() {
 
                 )}
 
-                {/* relateddives */}
+                {/* relateddives section */}
                 {relatedDives?.length > 0 && (
-                  <div className="mt-8 border-t border-gray-800 pt-4">
-                    <h4 className="text-sm font-semibold text-green-400 mb-3">
+                  <div className="mt-4 border-t border-gray-800 pt-4">
+                    <h4 className="text-sm font-semibold text-purple-400 mb-3">
                       Related Dives
                     </h4>
                     <div className="space-y-2">
@@ -919,6 +1035,43 @@ function SprintDetail() {
                       ))}
                     </div>
                   </div>
+                )}
+
+                {/* suggested concepts via AI */}
+                {suggestedConcepts?.length > 0 && (
+
+                <div className="mt-8 border-t border-gray-800 pt-4">
+
+                  <h4 className="text-sm font-semibold text-purple-400 mb-3">
+                    Suggested Next Concepts
+                  </h4>
+
+                  <div className="flex flex-wrap gap-2">
+
+                    {suggestedConcepts?.map((concept, i) => (
+
+                      <button
+                        key={i}
+                        onClick={() => handleCreateFromConcept(concept)}
+                        className="
+                          px-3 py-1
+                          text-sm
+                          bg-purple-500/10
+                          text-purple-300
+                          border border-purple-500/20
+                          rounded-full
+                          hover:bg-purple-500/20
+                        "
+                      >
+                        {concept}
+                      </button>
+
+                    ))}
+
+                  </div>
+
+                </div>
+
                 )}
 
               </div>

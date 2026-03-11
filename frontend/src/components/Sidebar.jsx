@@ -59,7 +59,7 @@ function Sidebar({ user, mobile = false, onClose }) {
 
               <button
                 onClick={() => go(`/u/${user?.username}`)}
-                className="text-xs text-purple-400 hover:underline"
+                className="text-xs text-purple-400 hover:underline hover:underline-offset-4"
               >
                 Public Profile
               </button>

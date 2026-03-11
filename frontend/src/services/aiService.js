@@ -22,4 +22,7 @@ export const aiService = {
   },
 
   expandConcept: (concept) => api.post("/ai/expand-concept", { concept }),
+
+  suggestConcepts: (concept) =>
+    api.post("/ai/suggest-concepts", { concept }),
 }
