@@ -116,6 +116,9 @@ function SprintDetail() {
 
   const [expandingConcept, setExpandingConcept] = useState(null)
 
+  const [relatedDives, setRelatedDives] = useState()
+  
+
   const handleDownloadReport = async () => {
 
     const element = document.getElementById("sprint-report")
@@ -213,6 +216,10 @@ function SprintDetail() {
     deepDiveService.getBacklinks(selectedDiveId)
       .then(setBacklinks)
       .catch(() => setBacklinks([]))
+
+    deepDiveService.getRelated(selectedDiveId)
+      .then(setRelatedDives)
+      .catch(() => setRelatedDives([]))
 
   }, [selectedDiveId])
 
@@ -711,7 +718,19 @@ function SprintDetail() {
                         hover:bg-yellow-500/20
                         transition
                       ">
-                      {expandingConcept === concept ? "Expanding..." : concept}
+                      {/* {expandingConcept === concept ? "Expanding..." : concept} */}
+                      {expandingConcept === concept ? (
+                        <>
+                          ⏳ Expanding...
+                        </>
+                      ) : (
+                        <>
+                          {concept}
+                          <span className="text-yellow-400 text-xs opacity-70">
+                             ✨
+                          </span>
+                        </>
+                      )}
                     </button>
                   ))}
 
@@ -790,7 +809,6 @@ function SprintDetail() {
           </div>
 
 
-
           {/* RIGHT CONTENT */}
           <div className="lg:col-span-2">
 
@@ -846,7 +864,8 @@ function SprintDetail() {
                 <Section title="Hypothesis" content={selectedDive.hypothesis} />
                 <Section title="Tests" content={selectedDive.tests} />
                 <Section title="Conclusion" content={selectedDive.conclusion} />
-
+                
+                {/* backlinks */}
                 {backlinks.length > 0 && (
 
                   <div className="mt-8 border-t border-gray-800 pt-4">
@@ -877,6 +896,29 @@ function SprintDetail() {
 
                   </div>
 
+                )}
+
+                {/* relateddives */}
+                {relatedDives?.length > 0 && (
+                  <div className="mt-8 border-t border-gray-800 pt-4">
+                    <h4 className="text-sm font-semibold text-green-400 mb-3">
+                      Related Dives
+                    </h4>
+                    <div className="space-y-2">
+                      {relatedDives?.map(d => (
+                        <button
+                          key={d?._id}
+                          onClick={() => setSelectedDiveId(d._id)}
+                          className="
+                            block text-left w-full
+                            text-sm text-green-400
+                            hover:underline hover:underline-offset-4
+                          ">
+                          {d?.title}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
               </div>

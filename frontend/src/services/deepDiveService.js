@@ -23,5 +23,8 @@ export const deepDiveService = {
     api.delete(`/deep-dives/${id}`),
 
   getBacklinks: (id) =>
-    api.get(`/deep-dives/${id}/backlinks`)
+    api.get(`/deep-dives/${id}/backlinks`),
+
+  getRelated: (diveId) =>
+    api.get(`/deep-dives/${diveId}/related`),
 }

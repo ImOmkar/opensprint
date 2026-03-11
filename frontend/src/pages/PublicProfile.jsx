@@ -40,13 +40,13 @@ function PublicProfile() {
 
   // console.log("concepts", concepts)
 
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        Not Found
-      </div>
-    )
-  }
+  // if (!data) {
+  //   return (
+  //     <div className="min-h-screen bg-black text-white flex items-center justify-center">
+  //       <Spinner text="Loading profile..." />
+  //     </div>
+  //   )
+  // }
 
   if (loading) {
     return (
