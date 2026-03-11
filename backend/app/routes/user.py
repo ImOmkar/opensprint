@@ -196,6 +196,7 @@ async def public_activity(username: str):
     
 @router.get("/{username}/concepts")
 async def get_user_concepts(username: str):
+
     user = await database["users"].find_one({"username": username})
 
     if not user:
@@ -205,19 +206,34 @@ async def get_user_concepts(username: str):
         "user_id": user["github_id"]
     })
 
-    concepts = set()
+    concepts = {}
 
     async for dive in dives:
 
-        if dive.get("tag"):
-            for tag in dive["tag"]:
-                concepts.add(tag)
-        
+        dive_id = str(dive["_id"])
+
+        # tags
+        if dive.get("tags"):
+            for tag in dive["tags"]:
+                if tag not in concepts:
+                    concepts[tag] = dive_id
+
+        # title as concept
         if dive.get("title"):
-            concepts.add(dive["title"])
+            title = dive["title"]
+            if title not in concepts:
+                concepts[title] = dive_id
+
+    result = [
+        {
+            "name": concept,
+            "dive_id": dive_id
+        }
+        for concept, dive_id in concepts.items()
+    ]
 
     return {
-        "concepts": list(concepts)[:12]
+        "concepts": result[:12]
     }
 
 @router.get("/{username}/{sprint_id}")

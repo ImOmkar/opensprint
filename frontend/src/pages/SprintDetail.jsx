@@ -37,7 +37,7 @@ function Section({ title, content }) {
         {title}
       </h4>
 
-      <div className="prose prose-invert max-w-none text-sm bg-gray-950 border border-gray-800 rounded p-4">
+      <div className="prose prose-invert max-w-none text-sm bg-gray-950 border border-gray-800 rounded-xl p-4">
 
         <LinkedMarkdown content={content} />
 
@@ -122,7 +122,7 @@ function SprintDetail() {
 
   const [suggestedConcepts, setSuggestedConcepts] = useState()
 
-  const [timelineDives, setTimelineDives] = useState([])
+  // const [timelineDives, setTimelineDives] = useState([])
   
 
   const handleDownloadReport = async () => {
@@ -214,9 +214,9 @@ function SprintDetail() {
 
       })
 
-    deepDiveService.getSprintTimeline(id)
-      .then(setTimelineDives)
-      .catch(() => setTimelineDives([]))
+    // deepDiveService.getSprintTimeline(id)
+    //   .then(setTimelineDives)
+    //   .catch(() => setTimelineDives([]))
 
   }, [id])
 
@@ -636,7 +636,7 @@ function SprintDetail() {
             </div>
 
             {/* timeline */}
-            {timelineDives?.length > 0 && (
+            {/* {timelineDives?.length > 0 && (
               <div className="
                 bg-gray-900
                 border border-gray-800
@@ -675,7 +675,7 @@ function SprintDetail() {
                 </div>
 
               </div>
-            )}
+            )} */}
 
             {/* draft list */}
             <DraftList

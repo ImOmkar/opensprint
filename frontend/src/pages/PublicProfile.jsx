@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router-dom"
 import { userService } from "../services/userService"
 import Spinner from "../components/Spinner"
 import PublicLayout from "../components/PublicLayout"
@@ -7,7 +7,7 @@ import { timelineService } from "../services/timelineService"
 
 function PublicProfile() {
   const { username } = useParams()
-
+  const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [timeline, setTimeline] = useState({})
   const [concepts, setConcept] = useState([])
@@ -146,9 +146,10 @@ function PublicProfile() {
 
           <div className="flex flex-wrap gap-2">
 
-            {concepts.map((concept, index) => (
-              <span
-                key={index}
+            {concepts.map((concept) => (
+              <button
+                onClick={() => navigate(`/d/${concept.dive_id}`)}
+                key={concept.name}
                 className="
                   px-3 py-1
                   text-sm
@@ -158,8 +159,8 @@ function PublicProfile() {
                   rounded-full
                 "
               >
-                {concept}
-              </span>
+                {concept.name}
+              </button>
             ))}
 
           </div>

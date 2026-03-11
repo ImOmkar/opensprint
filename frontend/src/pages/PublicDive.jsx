@@ -113,7 +113,7 @@ function Section({ title, content }) {
         {title}
       </h2>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+      <div className="prose prose-invert max-w-none text-sm bg-gray-950 border border-gray-800 rounded-xl p-4">
         <LinkedMarkdown content={content} mode="public" />
       </div>
 
