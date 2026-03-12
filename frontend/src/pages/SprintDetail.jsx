@@ -25,6 +25,8 @@ import ShareModal from "../components/ShareModal"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 import SprintReport from "../components/SprintReport"
+import SprintAnalyticsModal from "../components/SprintAnalyticsModal"
+
 
 function Section({ title, content }) {
 
@@ -121,6 +123,8 @@ function SprintDetail() {
   const [conceptRadar, setConceptRadar] = useState()
 
   const [suggestedConcepts, setSuggestedConcepts] = useState()
+
+  const [analyticsOpen, setAnalyticsOpen] = useState(false)
 
   // const [timelineDives, setTimelineDives] = useState([])
   
@@ -630,6 +634,13 @@ function SprintDetail() {
                   className="w-full sm:basis-full px-4 py-2 bg-white text-black rounded-lg text-sm hover:bg-gray-200"
                 >
                   Download Report
+                </button>
+
+                <button
+                  onClick={() => setAnalyticsOpen(true)}
+                  className="w-full sm:flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm"
+                >
+                  📊 Analytics
                 </button>
               </div>
 
@@ -1205,6 +1216,12 @@ function SprintDetail() {
           sprint={sprint} dives={dives} username={user?.username} streak={0}>
         </SprintReport>
       </div>
+
+      <SprintAnalyticsModal
+        sprintId={id}
+        isOpen={analyticsOpen}
+        onClose={() => setAnalyticsOpen(false)}
+      />
 
       {/* </div> */}
     </DashboardLayout>

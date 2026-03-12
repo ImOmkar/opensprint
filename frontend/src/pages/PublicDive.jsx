@@ -5,12 +5,15 @@ import { backlinkService } from "../services/backlinkService"
 import Spinner from "../components/Spinner"
 import LinkedMarkdown from "../components/LinkedMarkdown"
 import PublicLayout from "../components/PublicLayout"
+// import { analyticsService } from "../services/analyticsService"
+// import { getVisitorId } from "../utils/visitor"
 
 function PublicDive() {
   const { diveId } = useParams()
   const [backlinks, setBacklinks] = useState([])
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  // const [analytics, setAnalytics] = useState(null)
 
   useEffect(() => {
     deepDiveService.getPublicDive(diveId)
@@ -19,7 +22,23 @@ function PublicDive() {
     backlinkService.getPublicBacklinks(diveId)
        .then(setBacklinks)
        .catch(() => setBacklinks([]))
+
+    // analyticsService.getDiveAnalytics(diveId)
+    //   .then(setAnalytics)
+    //   .catch(() => setAnalytics(null))
+
+    // if (!diveId) return
+
+    // analyticsService.trackEvent({
+    //   type: "dive_view",
+    //   dive_id: diveId,
+    //   sprint_id: dive.sprint_id,
+    //   visitor_id: getVisitorId(),
+    //   referrer: document.referrer || "direct"
+    // })
   }, [diveId])
+
+
 
   if (loading) {
     return <Spinner text="Loading dive..." />
@@ -37,6 +56,13 @@ function PublicDive() {
       <h1 className="text-3xl text-green-400 font-bold mb-4">
         {dive.title}
       </h1>
+
+      {/* {analytics && (
+        <div className="text-sm text-gray-400 flex gap-4 mt-2">
+          <span>👁 {analytics.views} views</span>
+          <span>👤 {analytics.visitors} readers</span>
+        </div>
+      )} */}
 
       <p className="text-gray-400 mb-6">
         by <Link className="hover:underline hover:underline-offset-4 hover:text-green-400" to={`/u/${user.username}`}>u/{user?.username}</Link> • <Link className="hover:underline hover:underline-offset-4 hover:text-green-400" to={`/u/${user.username}/${sprint._id}`}>{sprint.title}</Link>

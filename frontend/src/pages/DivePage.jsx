@@ -7,6 +7,8 @@ import LinkedMarkdown from "../components/LinkedMarkdown"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
 import DashboardLayout from "../components/DashboardLayout"
 import { userService } from "../services/userService"
+import { analyticsService } from "../services/analyticsService"
+import DiveAnalyticsModal from "../components/DiveAnalyticsModal"
 
 function DivePage() {
 
@@ -18,11 +20,15 @@ function DivePage() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const [analytics, setAnalytics] = useState(null)
+  const [analyticsOpen, setAnalyticsOpen] = useState(false)
+
   useEffect(() => {
 
     Promise.all([
       deepDiveService.getById(diveId),
       userService.getMe()
+
     ])
       .then(async ([data, userData]) => {
 
@@ -37,6 +43,27 @@ function DivePage() {
       .catch(() => navigate("/dashboard"))
 
   }, [diveId])
+
+  useEffect(() => {
+
+    if (!diveId) return
+  
+    analyticsService.getDiveAnalytics(diveId)
+      .then(setAnalytics)
+      .catch(() => setAnalytics(null))
+  
+  }, [diveId])
+
+  const openAnalytics = async () => {
+    try{
+      const data = await analyticsService.getDiveAnalytics(diveId)
+
+      setAnalytics(data)
+      setAnalyticsOpen(true)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   if (loading) {
     return (
@@ -84,6 +111,18 @@ function DivePage() {
               Logged {formatRelativeTime(dive.created_at)}
             </span>
 
+            
+          <button
+            onClick={openAnalytics}
+            className="
+              flex items-center gap-1 hover:underline hover:underline-offset-4
+            ">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+            </svg>
+            Analytics
+          </button>
+
             {dive.tags?.length > 0 && (
               <div className="flex gap-2 flex-wrap">
                 {dive.tags.map(tag => (
@@ -110,7 +149,7 @@ function DivePage() {
         {/* Backlinks */}
         {backlinks.length > 0 && (
 
-          <div className="mt-16">
+          <div className="mt-6">
 
             <h2 className="text-xl font-semibold text-purple-400 mb-6">
               Referenced By
@@ -153,6 +192,12 @@ function DivePage() {
 
         )}
 
+        <DiveAnalyticsModal
+          isOpen={analyticsOpen}
+          onClose={() => setAnalyticsOpen(false)}
+          analytics={analytics}        
+        />
+
       </div>
 
     </DashboardLayout>
@@ -165,7 +210,7 @@ function Section({ title, content }) {
   if (!content) return null
 
   return (
-    <div className="mb-12">
+    <div className="mb-4">
 
       <h2 className="text-gray-400 font-semibold mb-4 tracking-wide">
         {title}
