@@ -147,8 +147,8 @@ function PublicProfile() {
           <div className="flex flex-wrap gap-2">
 
             {concepts.map((concept) => (
-              <button
-                onClick={() => navigate(`/d/${concept.dive_id}`)}
+              <Link
+                to={`/search?concept=${encodeURIComponent(concept.name)}`}
                 key={concept.name}
                 className="
                   px-3 py-1
@@ -160,7 +160,7 @@ function PublicProfile() {
                 "
               >
                 {concept.name}
-              </button>
+              </Link>
             ))}
 
           </div>

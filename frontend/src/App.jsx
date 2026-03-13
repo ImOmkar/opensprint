@@ -12,6 +12,7 @@ import GraphPage from "./pages/GraphPage"
 import KnowledgeTimeline from "./pages/KnowledgeTimeline"
 import NotFound from "./pages/NotFound"
 import PublicDive from "./pages/PublicDive"
+import SearchPage from "./pages/SearchPage"
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
         <Route path="/u/:username" element={<PublicProfile />} />
         <Route path="/u/:username/:sprintId" element={<PublicSprint />} />
         <Route path="/d/:diveId" element={<PublicDive/>} />
+        <Route path="/search" element={<SearchPage />} />
 
         <Route
           path="/dashboard"
