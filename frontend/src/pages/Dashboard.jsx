@@ -12,6 +12,7 @@ import StatGrid from "../components/StatGrid"
 import SprintGrid from "../components/SprintGrid"
 import SprintModal from "../components/SprintModal"
 import ActivityHeatmap from "../components/ActivityHeatmap"
+import ConceptRadar from "../components/ConceptRadar"
 import toast from "react-hot-toast"
 
 function Dashboard() {
@@ -50,6 +51,7 @@ function Dashboard() {
   const originalCuriosity = useRef(curiosity)
 
   const [activityFeed, setActivityFeed] = useState([])
+  const [conceptRadar, setConceptRadar] = useState([])
 
 
   useEffect(() => {
@@ -63,6 +65,7 @@ function Dashboard() {
           loadSprints(),
           loadStats(),
           loadGlobalTags(),
+          loadConceptRadar(),
           // loadActivityFeed()
         ])
 
@@ -95,6 +98,15 @@ function Dashboard() {
     }
   
   }, [editingCuriosity, curiosity])
+
+  const loadConceptRadar = async () => {
+    try {
+      const data = await userService.getConceptRadar()
+      setConceptRadar(data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const loadActivityFeed = async () => {
     try{
@@ -457,7 +469,8 @@ function Dashboard() {
 
           )}
         </div>
-
+        
+        {/* current question */}
         <div
           ref={questionRef}
           className="
@@ -511,53 +524,13 @@ function Dashboard() {
         {/* sprint stats */}
         <StatGrid stats={stats} />
 
+        {/* concept bubble radar */}
+        <ConceptRadar concepts={conceptRadar} />
+
         {/* activity heatmap */}
         <div className="mb-6">
           <ActivityHeatmap />
         </div>
-
-        {/* Activity feed */}
-        {/* {activityFeed.length > 0 && (
-        <div className="
-          mb-6
-          bg-gray-900
-          border border-gray-800
-          rounded-xl
-          p-4
-        ">
-
-          <p className="text-sm text-gray-400 mb-3">
-            Activity Feed
-          </p>
-
-          <div className="space-y-2">
-
-            {activityFeed.map(item => (
-
-              <div
-                key={item._id}
-                className="flex items-center justify-between text-sm"
-              >
-
-                <button
-                  onClick={() => navigate(`/dive/${item._id}`)}
-                  className="text-green-400 hover:underline hover:underline-offset-4"
-                >
-                  {item.title}  
-                </button>
-
-                <span className="text-xs text-gray-500">
-                  {formatRelativeTime(item.created_at)}
-                </span>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
-        )} */}
 
         <SprintGrid
           sprints={sprints}

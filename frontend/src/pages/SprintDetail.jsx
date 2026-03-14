@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react"
-// import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import LinkedMarkdown from "../components/LinkedMarkdown"
 
 import { useParams, useNavigate } from "react-router-dom"
-// import { api } from "../api/client"
 import { formatRelativeTime, formatExactTime } from "../utils/time"
 import { deepDiveService } from "../services/deepDiveService"
 import { sprintService } from "../services/sprintService"
@@ -217,11 +215,6 @@ function SprintDetail() {
         setTags(draft.tags || [])
 
       })
-
-    // deepDiveService.getSprintTimeline(id)
-    //   .then(setTimelineDives)
-    //   .catch(() => setTimelineDives([]))
-
   }, [id])
 
   useEffect(() => {
@@ -239,9 +232,9 @@ function SprintDetail() {
       .then(setConceptRadar)
       .catch(() => setConceptRadar([]))
 
-    aiService.expandConcept(selectedDive.title)
-      .then(res => setSuggestedConcepts(res.concepts || []))
-      .catch(() => setSuggestedConcepts([]))
+    // aiService.expandConcept(selectedDive.title)
+    //   .then(res => setSuggestedConcepts(res.concepts || []))
+    //   .catch(() => setSuggestedConcepts([]))
 
   }, [selectedDiveId])
 
@@ -269,18 +262,6 @@ function SprintDetail() {
     return () => clearTimeout(timeout)
 
   }, [title, problem, hypothesis, tests, conclusion, tags, id, isDiveModalOpen])
-
-  console.log("suggested concepts", suggestedConcepts)
-
-  // useEffect(() => {
-
-  //   if (dives.length === 0) return
-  
-  //   const unexplored = getUnexploredConcepts()
-  
-  //   setUnexploredConcepts(unexplored)
-  
-  // }, [dives])
 
   useEffect(() => {
 
@@ -320,37 +301,6 @@ function SprintDetail() {
       .then(data => setDives(data))
       .catch(() => navigate("/"))
   }
-
-  // const getUnexploredConcepts = () => {
-
-  //   const allLinks = new Set()
-  //   const diveTitles = new Set()
-  
-  //   dives.forEach(dive => {
-  
-  //     diveTitles.add(dive.title)
-  
-  //     const texts = [
-  //       dive.problem,
-  //       dive.hypothesis,
-  //       dive.tests,
-  //       dive.conclusion
-  //     ]
-  
-  //     texts.forEach(t => {
-  //       extractLinks(t).forEach(link => {
-  //         allLinks.add(link)
-  //       })
-  //     })
-  
-  //   })
-  
-  //   const unexplored = [...allLinks].filter(
-  //     link => !diveTitles.has(link)
-  //   )
-  
-  //   return unexplored
-  // }
 
   function getUnexploredConcepts() {
 
@@ -394,10 +344,6 @@ function SprintDetail() {
       hypothesis,
       tests,
       conclusion,
-      // tags: tags
-      //   .split(",")
-      //   .map(tag => tag.trim().replace(/^#/, ""))
-      //   .filter(Boolean)
       tags: tags
     }
 
@@ -438,21 +384,6 @@ function SprintDetail() {
       toast.error("Failed to delete a dive")
     }
   }
-
-  // const handleCreateFromConcept = (concept) => {
-
-  //   setEditingDiveId(null)
-  //   setSelectedDiveId(null)
-  
-  //   setTitle(concept)
-  //   setProblem("")
-  //   setHypothesis("")
-  //   setTests("")
-  //   setConclusion("")
-  //   setTags([])
-  
-  //   setIsDiveModalOpen(true)
-  // }
 
   const handleCreateFromConcept = async (concept) => {
     setExpandingConcept(concept)
@@ -497,10 +428,6 @@ function SprintDetail() {
       hypothesis,
       tests,
       conclusion,
-      // tags: tags
-      //   .split(",")
-      //   .map(tag => tag.trim().replace(/^#/, ""))
-      //   .filter(Boolean)
       tags: tags
     }
 
@@ -646,48 +573,6 @@ function SprintDetail() {
 
             </div>
 
-            {/* timeline */}
-            {/* {timelineDives?.length > 0 && (
-              <div className="
-                bg-gray-900
-                border border-gray-800
-                rounded-xl
-                p-4
-              ">
-
-                <p className="text-sm text-gray-400 mb-3">
-                  Sprint Timeline
-                </p>
-
-                <div className="space-y-2">
-
-                  {timelineDives?.map(d => (
-
-                    <div
-                      key={d._id}
-                      className="flex items-center gap-3 text-sm"
-                    >
-
-                      <span className="text-gray-500 text-xs w-20">
-                        {new Date(d.created_at).toLocaleDateString()}
-                      </span>
-
-                      <button
-                        onClick={() => setSelectedDiveId(d._id)}
-                        className="text-green-400 hover:underline"
-                      >
-                        {d.title}
-                      </button>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-              </div>
-            )} */}
-
             {/* draft list */}
             <DraftList
               sprintId={id}
@@ -815,22 +700,6 @@ function SprintDetail() {
                 </p>
 
                 <div className="flex flex-wrap gap-2">
-
-                  {/* {unexploredConcepts.map((concept, index) => (
-                    <button
-                      key={index}
-                      className="
-                        px-3 py-1
-                        text-sm
-                        bg-yellow-500/10
-                        text-yellow-300
-                        border border-yellow-500/20
-                        rounded-full
-                      "
-                    >
-                      {concept}
-                    </button>
-                  ))} */}
 
                   {unexploredConcepts.map((concept, index) => (
                     <button

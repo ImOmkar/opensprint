@@ -10,6 +10,9 @@ export const userService = {
 
   updateOpenQuestion: (body) => api.patch("/users/me/open-question", body),
 
+  getConceptRadar: () =>
+    api.get("/users/me/concept-radar"),
+
   getPublicProfile: (username) =>
     api.get(`/users/${username}`, {
       skipAuthRedirect: true
