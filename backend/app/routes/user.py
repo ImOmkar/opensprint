@@ -70,7 +70,31 @@ async def update_open_question(
     )
 
     return {"success": True}
+@router.get("/me/concept-radar")
+async def get_global_concept_radar(
+    current_user=Depends(get_current_user)
+):
 
+    dives = await database["deep_dives"].find({
+        "user_id": current_user["github_id"]
+    }).to_list(500)
+
+    tag_counts = {}
+
+    for dive in dives:
+        for tag in dive.get("tags", []):
+            tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+    sorted_tags = sorted(
+        tag_counts.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    return [
+        {"concept": tag, "count": count}
+        for tag, count in sorted_tags[:8]
+    ]
 @router.get("/{username}")
 async def public_profile(username: str):
     user = await database["users"].find_one(
