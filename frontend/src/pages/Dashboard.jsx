@@ -52,6 +52,7 @@ function Dashboard() {
 
   const [activityFeed, setActivityFeed] = useState([])
   const [conceptRadar, setConceptRadar] = useState([])
+  const [theme, setTheme] = useState("dark")
 
 
   useEffect(() => {
@@ -61,6 +62,7 @@ function Dashboard() {
         setCuriosity(data?.curiosity || "")
         setOpenQuestion(data?.open_question || "")
         originalQuestion.current = data?.open_question || ""
+        setTheme(data.profile_theme || "dark")
         await Promise.all([
           loadSprints(),
           loadStats(),
@@ -518,6 +520,54 @@ function Dashboard() {
             />
 
           )}
+
+        </div>
+
+        <div className="
+            mb-6
+            bg-gray-900/60
+            border border-gray-800
+            rounded-xl
+            p-4
+          ">
+
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">
+          Profile Theme
+          </p>
+
+          <div className="flex gap-2">
+
+          {["dark","terminal","minimal"].map(t => (
+
+          <button
+          key={t}
+          onClick={async () => {
+
+            setTheme(t)
+
+            await userService.updateTheme({
+              profile_theme: t
+            })
+
+            toast.success("Theme updated")
+
+          }}
+          className={`
+          px-3 py-1 rounded text-sm
+          border
+          ${theme === t
+            ? "bg-purple-600 border-purple-400 text-white"
+            : "bg-gray-800 border-gray-700 text-gray-300"}
+          `}
+          >
+
+          {t}
+
+          </button>
+
+          ))}
+
+          </div>
 
         </div>
 

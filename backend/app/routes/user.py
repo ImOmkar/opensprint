@@ -3,7 +3,7 @@ from app.db.database import database
 from bson import ObjectId
 from app.auth.dependencies import get_current_user
 from datetime import datetime, timedelta
-from app.models.user import CuriosityUpdate, OpenQuestionUpdate
+from app.models.user import CuriosityUpdate, OpenQuestionUpdate, ThemeUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -70,6 +70,7 @@ async def update_open_question(
     )
 
     return {"success": True}
+
 @router.get("/me/concept-radar")
 async def get_global_concept_radar(
     current_user=Depends(get_current_user)
@@ -95,6 +96,20 @@ async def get_global_concept_radar(
         {"concept": tag, "count": count}
         for tag, count in sorted_tags[:8]
     ]
+    
+@router.patch("/me/theme")
+async def update_theme(
+    body: ThemeUpdate,
+    current_user=Depends(get_current_user)
+):
+
+    await database["users"].update_one(
+        {"github_id": current_user["github_id"]},
+        {"$set": {"profile_theme": body.profile_theme}}
+    )
+
+    return {"success": True}
+
 @router.get("/{username}")
 async def public_profile(username: str):
     user = await database["users"].find_one(

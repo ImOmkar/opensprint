@@ -10,6 +10,9 @@ export const userService = {
 
   updateOpenQuestion: (body) => api.patch("/users/me/open-question", body),
 
+  updateTheme: (body) =>
+    api.patch("/users/me/theme", body),
+
   getConceptRadar: () =>
     api.get("/users/me/concept-radar"),
 

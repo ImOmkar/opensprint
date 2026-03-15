@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, Link } from "react-router-dom"
 import { deepDiveService } from "../services/deepDiveService"
 import { backlinkService } from "../services/backlinkService"
 import Spinner from "../components/Spinner"
@@ -126,12 +126,13 @@ function DivePage() {
             {dive.tags?.length > 0 && (
               <div className="flex gap-2 flex-wrap">
                 {dive.tags.map(tag => (
-                  <span
+                  <Link
                     key={tag}
+                    to={`/search?concept=${encodeURIComponent(tag)}`}
                     className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs"
                   >
                     #{tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
             )}
