@@ -57,7 +57,7 @@ function DivePage() {
   const openAnalytics = async () => {
     try{
       const data = await analyticsService.getDiveAnalytics(diveId)
-
+      console.log("data", data)
       setAnalytics(data)
       setAnalyticsOpen(true)
     } catch (err) {

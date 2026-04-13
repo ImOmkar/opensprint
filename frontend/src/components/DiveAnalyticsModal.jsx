@@ -12,11 +12,13 @@ import {
 
 function DiveAnalyticsModal({ isOpen, onClose, analytics }) {
 
+  console.log(analytics)
+
   if (!isOpen) return null
 
   const timelineData =
     analytics?.timeline?.map(item => ({
-      date: item._id,
+      date:  item.date, //item._id,
       views: item.count
     })) || []
 

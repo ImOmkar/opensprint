@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.db.database import database
 from app.models.analytics import AnalyticsEvent
 
@@ -12,7 +12,7 @@ async def track_event(event: AnalyticsEvent, request: Request):
 
     data["created_at"] = datetime.now()
 
-    await database["analytics_events"].insert_one(data)
+    await database["analytics"].insert_one(data)
 
     return {"status": "ok"}
 
@@ -20,12 +20,16 @@ async def track_event(event: AnalyticsEvent, request: Request):
 @router.get("/dive/{dive_id}")
 async def get_dive_analytics(dive_id: str):
 
-    events = database["analytics_events"]
+    events = database["analytics"]
+    
+    print(events)
 
     views = await events.count_documents({
         "type": "dive_view",
         "dive_id": dive_id
     })
+    
+    print(views)
 
     readers = len(await events.distinct(
         "visitor_id",
@@ -72,18 +76,32 @@ async def get_dive_analytics(dive_id: str):
             }
         }
     ]).to_list(20)
+    
+    # fill last 7 days
+    last_7_days = {}
+    for i in range(7):
+        day = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
+        last_7_days[day] = 0
+
+    for item in timeline:
+        last_7_days[item["_id"]] = item["count"]
+
+    timeline_filled = [
+        {"date": k, "count": v}
+        for k, v in sorted(last_7_days.items())
+    ]
 
     return {
         "views": views,
         "readers": readers,
-        "timeline": timeline,
+        "timeline": timeline_filled,
         "sources": sources
     }
 
 @router.get("/sprint/{sprint_id}")
 async def get_sprint_analytics(sprint_id: str):
 
-    events = database["analytics_events"]
+    events = database["analytics"]
 
     total_views = await events.count_documents({
         "type": "dive_view",

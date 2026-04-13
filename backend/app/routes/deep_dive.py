@@ -9,6 +9,8 @@ from typing import List
 from pymongo import ReturnDocument
 from app.utils.wiki_links import extract_wiki_links
 
+from app.events.producer import send_event
+
 router = APIRouter(prefix="/deep-dives", tags=["Deep Dives"])
 
 @router.post("/")
@@ -94,6 +96,12 @@ async def get_deep_dives(
     ):
         dive["_id"] = str(dive["_id"])
         dives.append(dive)
+        
+        # send_event("dive_viewed", {
+        #     "dive_id": str(dive["_id"]),
+        #     "user_id": current_user["github_id"],
+        #     "timestamp": str(datetime.now())
+        # })
 
     return dives
 
@@ -560,6 +568,13 @@ async def get_dive_by_id(
 
     if not dive:
         return None
+    
+    # event
+    send_event("dive_view", {
+        "dive_id": dive_id,
+        "user_id": current_user["github_id"],
+        "referrer": "direct"
+    })
 
     dive["_id"] = str(dive["_id"])
 
