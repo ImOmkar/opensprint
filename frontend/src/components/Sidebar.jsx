@@ -90,6 +90,12 @@ function Sidebar({ user, mobile = false, onClose }) {
               active={location.pathname === "/timeline"}
               onClick={() => go("/timeline")}
             />
+
+            <NavItem
+              label="Settings"
+              active={location.pathname === "/settings"}
+              onClick={() => go("/settings")}
+            />
           </nav>
         </div>
 

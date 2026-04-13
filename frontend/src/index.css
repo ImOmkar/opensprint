@@ -3,20 +3,37 @@
 @tailwind utilities;
 
 
-.theme-dark {
-  background: #000;
-  color: white;
+/* DARK (default) */
+/* .theme-dark {
+  --bg: #000000;
+  --card: #111111;
+  --text: #ffffff;
+  --accent: #22c55e;
+} */
+
+[data-theme="dark"] {
+  --bg: #000;
+  --card: #111;
+  --text: #fff;
+  --border: #222;
+  --accent: #22c55e;
 }
 
-.theme-terminal {
-  background: #000;
-  color: #00ff9c;
-  font-family: monospace;
+[data-theme="terminal"] {
+  --bg: #000;
+  --card: #001a12;
+  --text: #00ff9c;
+  --border: #003d2a;
+  --accent: #00ff9c;
 }
 
+/* MINIMAL */
 .theme-minimal {
-  background: #f5f5f5;
-  color: #111;
+  --bg: #f9fafb;
+  --card: #ffffff;
+  --text: #111827;
+  --border: #e5e7eb;
+  --accent: #6366f1;
 }
 
 @keyframes slideUp {
@@ -27,5 +44,4 @@
       transform: translateY(0);
     }
   }
-
 

@@ -22,8 +22,8 @@ function ConceptRadar({ concepts = [] }) {
 
     <div className="
       mb-6
-      bg-gray-900
-      border border-gray-800
+      bg-[var(--card)]
+      border-[var(--border)]  
       rounded-xl
       p-5
     ">

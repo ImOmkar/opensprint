@@ -8,8 +8,8 @@ function SprintCard({ sprint, onEdit, onDelete, onToggle }) {
   return (
 
     <div className="
-      bg-gray-900
-      border border-gray-800
+      bg-[var(--card)]
+      border-[var(--border)]
       hover:border-green-500
       rounded-xl
       p-5

@@ -2,8 +2,9 @@ function StatCard({ label, value, color }) {
 
   return (
     <div className="
-        bg-gradient-to-br from-gray-900 to-gray-950
-        border border-gray-800
+        bg-[var(--card)]
+        border
+        border-[var(--border)]
         rounded-xl
         p-5
       ">

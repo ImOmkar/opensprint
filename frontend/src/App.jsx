@@ -13,6 +13,8 @@ import KnowledgeTimeline from "./pages/KnowledgeTimeline"
 import NotFound from "./pages/NotFound"
 import PublicDive from "./pages/PublicDive"
 import SearchPage from "./pages/SearchPage"
+import Setttings from "./pages/Settings"
+
 
 function App() {
   return (
@@ -92,6 +94,14 @@ function App() {
           element={
             <ProtectedRoute>
               <KnowledgeTimeline />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Setttings />
             </ProtectedRoute>
           }
         />

@@ -6,7 +6,7 @@ function DashboardLayout({ user, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="h-screen bg-black text-white flex overflow-hidden">
+    <div className="h-screen bg-[var(--bg)] text-[var(--text)] flex overflow-hidden">
       <div className="hidden md:block">
         <Sidebar user={user} />
       </div>

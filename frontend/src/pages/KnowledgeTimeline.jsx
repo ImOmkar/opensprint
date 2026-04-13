@@ -153,7 +153,7 @@ function KnowledgeTimeline() {
         </h1>
 
         {/* Timeline */}
-        <div className="relative">
+        <div className="relative" data-theme="dark">
 
           {/* Vertical Line */}
           <div className="absolute left-[15px] top-0 bottom-0 w-[4px] bg-green-800" />

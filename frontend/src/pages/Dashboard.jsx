@@ -14,9 +14,11 @@ import SprintModal from "../components/SprintModal"
 import ActivityHeatmap from "../components/ActivityHeatmap"
 import ConceptRadar from "../components/ConceptRadar"
 import toast from "react-hot-toast"
+import { useTheme } from "../context/ThemeContext"
 
 function Dashboard() {
   const [user, setUser] = useState(null)
+  const { setTheme } = useTheme()
   const [sprints, setSprints] = useState([])
   const [title, setTitle] = useState("")
   const [goal, setGoal] = useState("")
@@ -52,17 +54,16 @@ function Dashboard() {
 
   const [activityFeed, setActivityFeed] = useState([])
   const [conceptRadar, setConceptRadar] = useState([])
-  const [theme, setTheme] = useState("dark")
 
 
   useEffect(() => {
     userService.getMe()
       .then(async data => {
         setUser(data)
+        setTheme(data?.profile_theme || "dark")
         setCuriosity(data?.curiosity || "")
         setOpenQuestion(data?.open_question || "")
         originalQuestion.current = data?.open_question || ""
-        setTheme(data.profile_theme || "dark")
         await Promise.all([
           loadSprints(),
           loadStats(),
@@ -432,19 +433,20 @@ function Dashboard() {
           ref={curiosityRef}
           className="
             mb-6
-            bg-gray-900/60
-            border border-gray-800
+            bg-[var(--card)]
+            border
+            border-[var(--border)]
             rounded-xl
             p-4
           ">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+          <p className="text-xs text-[var(--text)] uppercase tracking-wide mb-2">
           🤔 Current Curiosity
           </p>
           {!editingCuriosity ? (
             <p
               onClick={() => setEditingCuriosity(true)}
               className="
-                text-white
+                text-[var(--text)]
                 text-sm
                 cursor-text
                 hover:text-purple-400
@@ -459,12 +461,12 @@ function Dashboard() {
               onChange={(e) => setCuriosity(e.target.value)}
               className="
                 w-full
-                bg-gray-950
-                border border-purple-500
+                bg-[var(--card)]
+                border-[var(--border)]
                 rounded-lg
                 px-3 py-2
                 text-sm
-                text-white
+                text-[var(--text)]
                 focus:outline-none
               "
             />
@@ -477,14 +479,15 @@ function Dashboard() {
           ref={questionRef}
           className="
             mb-6
-            bg-gray-900/60
-            border border-gray-800
+            bg-[var(--card)]
+            border
+            border-[var(--border)]
             rounded-xl
             p-4
           "
         >
 
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+          <p className="text-xs text-[var(--text)] uppercase tracking-wide mb-2">
             Open Question
           </p>
 
@@ -492,7 +495,7 @@ function Dashboard() {
 
             <p
               onClick={() => setEditingQuestion(true)}
-              className="text-white text-sm cursor-text hover:text-purple-400"
+              className="text-[var(--text)] text-sm cursor-text hover:text-purple-400"
             >
               {openQuestion || "Click to add something you're trying to understand"}
             </p>
@@ -523,54 +526,6 @@ function Dashboard() {
 
         </div>
 
-        <div className="
-            mb-6
-            bg-gray-900/60
-            border border-gray-800
-            rounded-xl
-            p-4
-          ">
-
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">
-          Profile Theme
-          </p>
-
-          <div className="flex gap-2">
-
-          {["dark","terminal","minimal"].map(t => (
-
-          <button
-          key={t}
-          onClick={async () => {
-
-            setTheme(t)
-
-            await userService.updateTheme({
-              profile_theme: t
-            })
-
-            toast.success("Theme updated")
-
-          }}
-          className={`
-          px-3 py-1 rounded text-sm
-          border
-          ${theme === t
-            ? "bg-purple-600 border-purple-400 text-white"
-            : "bg-gray-800 border-gray-700 text-gray-300"}
-          `}
-          >
-
-          {t}
-
-          </button>
-
-          ))}
-
-          </div>
-
-        </div>
-
         {/* sprint stats */}
         <StatGrid stats={stats} />
 
@@ -581,7 +536,8 @@ function Dashboard() {
         <div className="mb-6">
           <ActivityHeatmap />
         </div>
-
+        
+        {/* sprint card */}
         <SprintGrid
           sprints={sprints}
           onEdit={handleEditSprint}
@@ -589,6 +545,7 @@ function Dashboard() {
           onToggle={handleToggleSprint}
         />
 
+        {/* sprint modal */}
         <SprintModal
           isOpen={isSprintModalOpen}
           onClose={() => setIsSprintModalOpen(false)}
@@ -602,6 +559,7 @@ function Dashboard() {
           onSubmit={editingId ? handleUpdateSprint : handleCreateSprint}
         />
 
+        {/* confirmation modal */}
         <ConfirmModal
           isOpen={!!deleteSprintId}
           title="Delete Sprint"

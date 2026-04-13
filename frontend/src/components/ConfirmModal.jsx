@@ -46,7 +46,8 @@ function ConfirmModal({
 
         <div className="absolute inset-0 flex items-center justify-center p-4">
 
-          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-xl">
+          <div className="bg-[var(--card)]
+            border-[var(--border)] rounded-xl p-6 w-full max-w-md shadow-xl">
 
             <h2 className="text-lg font-semibold text-white mb-2">
               {title}

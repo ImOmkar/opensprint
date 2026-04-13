@@ -49,7 +49,8 @@ function ActivityHeatmap() {
     }
 
     return (
-        <div className="w-full bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-6">
+        <div className="w-full bg-[var(--card)]
+            border-[var(--border)] rounded-xl p-4 sm:p-6">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">

@@ -50,7 +50,8 @@ function PublicProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-[var(--bg)] border
+            border-[var(--text)]">
         <Spinner text="Loading profile..." />
       </div>
     )
@@ -64,8 +65,9 @@ function PublicProfile() {
         <div className="
           flex items-center gap-5
           mb-6
-          bg-gray-900/60
-          border border-gray-800
+          bg-[var(--card)]
+          border
+          border-[var(--border)]
           rounded-xl
           p-5">
 
@@ -83,7 +85,7 @@ function PublicProfile() {
 
             <div className="flex items-center gap-3 flex-wrap">
 
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-[var(--text)]">
                 {data.user.username}
               </h2>
 
@@ -91,9 +93,9 @@ function PublicProfile() {
                 <div className="
                   flex items-center gap-1
                   text-xs
-                  bg-orange-500/15
-                  border border-orange-500/40
-                  text-orange-400
+                  bg-[var(--bg)]
+                  border-[var(--border)]
+                  text-[var(--text)]
                   px-3 py-1
                   rounded-full
                   font-medium
@@ -104,7 +106,7 @@ function PublicProfile() {
 
             </div>
 
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-[var(--text)] mt-1">
               Learning in public
             </p>
 
@@ -116,16 +118,17 @@ function PublicProfile() {
         {data.user.curiosity && (
           <div className="
             mb-6
-            bg-gray-900/60
-            border border-gray-800
+            bg-[var(--card)]
+            border
+            border-[var(--border)]
             rounded-xl
             p-4
           ">
-            <p className="text-xs text-gray-500 mb-1">
+            <p className="text-xs text-[var(--text)] mb-1">
             🤔 Current Curiosity
             </p>
 
-            <p className="text-white">
+            <p className="text-[var(--text)]">
               {data.user.curiosity}
             </p>
           </div>
@@ -135,13 +138,14 @@ function PublicProfile() {
         {concepts.length > 0 && (
           <div className="
             mb-6
-            bg-gray-900/60
-            border border-gray-800
+            bg-[var(--card)]
+            border
+            border-[var(--border)]
             rounded-xl
             p-5
           ">
 
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-4">
+            <p className="text-xs text-[var(--text)] uppercase tracking-wide mb-4">
             🕵🏼‍♂️ Explored Concepts
             </p>
 
@@ -154,9 +158,10 @@ function PublicProfile() {
                   className="
                     px-3 py-1
                     text-sm
-                    bg-purple-500/10
-                    text-purple-300
-                    border border-purple-500/20
+                    bg-[var(--card)]
+                    text-[var(--text)]
+                    border
+                    border-[var(--border)]
                     rounded-full
                   "
                 >
@@ -174,17 +179,18 @@ function PublicProfile() {
           <div
             className="
               mb-4
-              bg-gray-900/60
-              border border-gray-800
+              bg-[var(--card)]
+              border
+              border-[var(--border)]
               rounded-xl
               p-4
             "
           >
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+            <p className="text-xs text-[var(--text)] uppercase tracking-wide mb-2">
             ❓ Open Question
             </p>
 
-            <p className="text-white text-sm">
+            <p className="text-[var(--text)] text-sm">
               {data?.user?.open_question}
             </p>
           </div>
@@ -220,13 +226,14 @@ function PublicProfile() {
           <div className="grid gap-4">
 
             {data.sprints.length === 0 && (
-              <div className="bg-gray-900 border border-gray-800 rounded p-8 text-center">
+              <div className="bg-[var(--card)]
+            border-[var(--border)] rounded p-8 text-center">
 
-                <h3 className="text-lg font-semibold text-green-400 mb-2">
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-2">
                   No public sprints yet
                 </h3>
 
-                <p className="text-gray-400">
+                <p className="text-[var(--text)]">
                   This user hasn't started any sprints.
                 </p>
 
@@ -238,24 +245,25 @@ function PublicProfile() {
                 key={sprint._id}
                 to={`/u/${data.user.username}/${sprint._id}`}
                 className="
-                  bg-gray-900
+                  bg-[var(--card)]
+                  border
+                  border-[var(--border)]
                   p-4
                   rounded-xl
-                  border border-gray-800
                   hover:border-green-500
                   transition
                   block
                 "
               >
-                <h4 className="text-lg font-bold text-green-400">
+                <h4 className="text-lg font-bold text-[var(--text)]">
                   {sprint.title}
                 </h4>
 
-                <p className="text-gray-400">
+                <p className="text-[var(--text)]">
                   {sprint.goal}
                 </p>
 
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-[var(--text)] mt-2">
                   Status: {sprint.status}
                 </p>
 
@@ -268,7 +276,7 @@ function PublicProfile() {
         {/* Timeline TAB */}
         {activeTab === "timeline" && (
 
-          <div className="relative border-l border-gray-800 pl-6 space-y-8">
+          <div className="relative border-l border-[var(--border)] pl-6 space-y-8">
 
             {Object.keys(timeline).length === 0 && (
               <p className="text-gray-500">
@@ -282,7 +290,7 @@ function PublicProfile() {
 
                 <div key={date}>
 
-                  <div className="text-sm text-gray-400 mb-3">
+                  <div className="text-sm text-[var(--text)] mb-3">
                     {new Date(date).toDateString()}
                   </div>
 
@@ -295,15 +303,16 @@ function PublicProfile() {
                         to={`/d/${dive.id}`}
                         className="
                           block
-                          bg-gray-900
-                          border border-gray-800
+                          bg-[var(--card)]
+                          border
+                          border-[var(--border)]
                           rounded-lg
                           p-4
                           hover:border-green-500
                           transition
                         "
                       >
-                        <p className="text-green-400 font-medium">
+                        <p className="text-[var(--text)] font-medium">
                           {dive.title}
                         </p>
 

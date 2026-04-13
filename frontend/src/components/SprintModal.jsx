@@ -56,7 +56,8 @@ function SprintModal({
         <div className="absolute inset-0 flex items-center justify-center p-4">
 
           <div className="
-            bg-gray-900 border border-gray-800
+            bg-[var(--card)]
+            border-[var(--border)]
             rounded-xl
             w-full max-w-lg
             p-6
