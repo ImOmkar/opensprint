@@ -9,6 +9,8 @@ from jose import jwt
 import httpx
 import os
 from app.models.user import OpenQuestionUpdate
+from fastapi.responses import JSONResponse
+
 
 router = APIRouter(prefix="/auth/github", tags=["Auth"])
 
@@ -91,7 +93,7 @@ async def github_callback(code: str, response: Response):
 
     # Set HTTP-only cookie
     response = RedirectResponse("https://opensprint-frontend.vercel.app/auth-success")
-    
+
     # response.set_cookie(
     #     key="access_token",
     #     value=jwt_token,
@@ -107,13 +109,32 @@ async def github_callback(code: str, response: Response):
         httponly=True,
         secure=True,
         samesite="none",
+        path="/",
+        max_age=86400
     )
 
     return response
     
 
 @router.post("/logout")
-async def logout(response: Response):
-    response.delete_cookie("access_token") 
-    response.delete_cookie("refresh_token")
-    return {"message": "Logged out successfully"}
+async def logout():
+
+    response = JSONResponse(
+        {"message": "Logged out successfully"}
+    )
+
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        secure=True,
+        samesite="none",
+    )
+
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+        secure=True,
+        samesite="none",
+    )
+
+    return response
