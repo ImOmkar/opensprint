@@ -10,7 +10,7 @@ app = FastAPI(title="OpenSprint API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://opensprint.vercel.app"
+        "https://opensprint-frontend.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
