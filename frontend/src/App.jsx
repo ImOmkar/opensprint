@@ -84,9 +84,9 @@ function App() {
         <Route
           path="/auth-success"
           element={
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <AuthSuccess />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           }
         />
         <Route
