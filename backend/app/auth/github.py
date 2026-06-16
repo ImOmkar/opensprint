@@ -90,7 +90,7 @@ async def github_callback(code: str, response: Response):
     )
 
     # Set HTTP-only cookie
-    response = RedirectResponse("http://localhost:5173/auth-success")
+    response = RedirectResponse("https://opensprint-frontend.vercel.app/auth-success")
     response.set_cookie(
         key="access_token",
         value=jwt_token,
